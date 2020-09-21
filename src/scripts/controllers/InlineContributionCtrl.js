@@ -1253,7 +1253,7 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
             email: $scope.accountInfo.email,
             password: $scope.accountInfo.password,
             password_confirm: $scope.accountInfo.password_confirm,
-            inline_registration: true, // do not send cofirmation email
+            inline_registration: true, // do not send confirmation email
           };
           // anonymous personal details
           Restangular.one('register').customPOST(data).then(function(success) {
@@ -1320,6 +1320,10 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
 
                 if ($scope.public_settings.site_campaign_ecommerce_analytics && $scope.public_settings.site_campaign_ecommerce_analytics.toggle) {
                   sendGATransaction(success, $scope.public_settings.site_campaign_ecommerce_analytics.code);
+                }
+
+                if ($scope.public_settings.site_campaign_facebook_analytics && $scope.public_settings.site_campaign_facebook_analytics.toggle) {
+                  sendFBTransaction(success, $scope.public_settings.site_campaign_facebook_analytics.code);
                 }
 
               }, function(failed) {
@@ -1434,6 +1438,7 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
               campaign_backer: 1,
             };
             UserService.updateUserData(data);
+
           }, function(failed) {
             $('#finalpledge').removeClass('disabled');
             if (failed.data.errors.email) {
@@ -1553,6 +1558,10 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
 
                 if ($scope.public_settings.site_campaign_ecommerce_analytics && $scope.public_settings.site_campaign_ecommerce_analytics.toggle) {
                   sendGATransaction(success, $scope.public_settings.site_campaign_ecommerce_analytics.code);
+                }
+
+                if ($scope.public_settings.site_campaign_facebook_analytics && $scope.public_settings.site_campaign_facebook_analytics.toggle) {
+                  sendFBTransaction(success, $scope.public_settings.site_campaign_facebook_analytics.code);
                 }
 
               }, function(failed) {
@@ -2144,7 +2153,7 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
           errorHandling(failed);
         });
       } else {
-        //GUEST CHECKOUT 
+        //GUEST CHECKOUT
 
         //if there is shipping
         if ($scope.pledgeLevel) {
@@ -2184,7 +2193,7 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
           //Create credit card without credit card token
           //Create new pledger account for the new user
           promises.push(StripeService.newGuestPledgerAccount($scope.creditCard));
-          $scope.resolveGuestPromiseChain(promises, pledgeAttributes);
+          $scope.resolveGuestPromiseChain(promises, pledgeAttributes); 
         }
 
       }
@@ -2248,6 +2257,10 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
 
         if ($scope.public_settings.site_campaign_ecommerce_analytics && $scope.public_settings.site_campaign_ecommerce_analytics.toggle) {
           sendGATransaction(success, $scope.public_settings.site_campaign_ecommerce_analytics.code);
+        }
+
+        if ($scope.public_settings.site_campaign_facebook_analytics && $scope.public_settings.site_campaign_facebook_analytics.toggle) {
+          sendFBTransaction(success, $scope.public_settings.site_campaign_facebook_analytics.code);
         }
 
       }, function(failed) {
@@ -2333,6 +2346,14 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
             },
             closable: false
           }).modal('show');
+
+          if ($scope.public_settings.site_campaign_ecommerce_analytics && $scope.public_settings.site_campaign_ecommerce_analytics.toggle) {
+            sendGATransaction(success, $scope.public_settings.site_campaign_ecommerce_analytics.code);
+          }
+  
+          if ($scope.public_settings.site_campaign_facebook_analytics && $scope.public_settings.site_campaign_facebook_analytics.toggle) {
+            sendFBTransaction(success, $scope.public_settings.site_campaign_facebook_analytics.code);
+          }
 
 
         if (typeof $scope.campaign.settings != 'undefined' && $scope.campaign.contribution_redirect) {
@@ -2438,9 +2459,13 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
             closable: false
           }).modal('show');
 
-        // log user in
+        
         if ($scope.public_settings.site_campaign_ecommerce_analytics && $scope.public_settings.site_campaign_ecommerce_analytics.toggle) {
           sendGATransaction(success, $scope.public_settings.site_campaign_ecommerce_analytics.code);
+        }
+
+        if ($scope.public_settings.site_campaign_facebook_analytics && $scope.public_settings.site_campaign_facebook_analytics.toggle) {
+          sendFBTransaction(success, $scope.public_settings.site_campaign_facebook_analytics.code);
         }
 
         if (typeof $scope.campaign.settings != 'undefined' && $scope.campaign.contribution_redirect) {
@@ -3053,6 +3078,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
 
   function sendGATransaction(success, gaId) {
 
+    console.log("Google Analytics ID: "+gaId);
+
     var ea = { //ecommerce analytics
       'id': success.id,
       'affiliation': $scope.campaign.name,
@@ -3063,6 +3090,11 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
     var name = ($scope.rname) ? $scope.rname : 'contribution';
 
     var script = "<script>" +
+      "(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){" +
+      "(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o)," +
+      "m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)" +
+      "})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');" +
+      
       "ga('create','" + gaId + "', 'auto', {'name': 'ecommerceTracking'});" +
 
       "ga('ecommerceTracking.require', 'ecommerce');" +
@@ -3083,6 +3115,25 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
       "</script>";
 
     $scope.gaScript = $sce.trustAsHtml(script);
+  }
+
+  function sendFBTransaction(success, fbId) {
+
+    var ea = { //ecommerce analytics
+      'id': success.id,
+      'affiliation': $scope.campaign.name,
+      'revenue': success.amount,
+      'name': $scope.rname
+    };
+    var name = ($scope.rname) ? $scope.rname : 'contribution';
+
+    var script = "<script>"+
+    "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};"+
+    "if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];"+
+    "s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init', '"+fbId+"');fbq('track', 'PageView');"+
+    "</script><noscript><img height='1' width='1' style='display:none'src='https://www.facebook.com/tr?id="+fbId+"&ev=PageView&noscript=1'/></noscript><!-- End Facebook Pixel Code -->";
+
+    $scope.fbScript = $sce.trustAsHtml(script);
   }
 
   // Animated scroll to rewards section

@@ -11,6 +11,7 @@
   "tab_stripeconnect_stripe_email": "Stripe Account Email",
   "tab_stripeconnect_stripe_key": "Stripe Token",
   "tab_stripeconnect_country": "Country",
+  "tab_stripeconnect_payout": "Payout",
   "tab_stripeconnect_deleteaccount": "Delete Account",
   "tab_stripeconnect_deleteaccount_message": " Make sure you go to Stripe Account Dashboard -> Account Settings -> Apps to revoke application access after deleting the connection here.",
   "tab_stripeconnect_deleteaccount_continue": "Do you want to continue?",

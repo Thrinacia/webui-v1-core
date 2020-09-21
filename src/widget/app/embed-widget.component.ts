@@ -2,7 +2,7 @@
 // Main App Component
 ///////////////////////////////////////////////////////////////////////////////////////////
 import { Component, Inject, ElementRef, OnInit, AfterViewChecked, ViewChild } from "@angular/core";
-import { DomSanitizer } from "@angular/platform-browser";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 import { NgClass, NgLocalization, NgPlural, NgPluralCase } from "@angular/common";
 import { ConstantsGlobal } from "./Constants-Global";
 import { Http, Headers, RequestOptions } from "@angular/http";
@@ -11,6 +11,7 @@ import { CampaignService } from "./service/Campaign.service";
 import { StripeService } from "./service/Stripe.service";
 import { CookieService } from "./service/Cookie.service";
 import { UtilService } from "./service/Util.service";
+import { ScriptService } from "./service/Script.service";
 import { SettingsService } from "./service/Settings.service";
 import { RegisterComponent } from "./components/modules/Register.component";
 import { LoginComponent } from "./components/modules/Login.component";
@@ -230,6 +231,11 @@ export class AppComponent implements OnInit {
   isExpressTab: boolean = false;
   isCustomCampaignPercentage: boolean = false;
   shouldCampaignAvatarImageShow: boolean = false;
+  fbTrackingEnabled: boolean = false;
+  googleTrackingEnabled: boolean = false;
+  gaId: string = "";
+  fbTrackingScript: SafeHtml;
+  fbId: string = "";
   siteLogo: Object = {
     "image": "",
     "link": ""
@@ -280,13 +286,7 @@ export class AppComponent implements OnInit {
   };
 
   constructor( @Inject(CampaignService) campaignService: CampaignService, @Inject(TranslationService) private translationService: TranslationService, @Inject(UserService) userService: UserService, @Inject(StripeService) stripeService: StripeService, @Inject(SettingsService) settingsService: SettingsService, private elementRef: ElementRef, private domSanitization: DomSanitizer, private http: Http, private cPipe: CurrencyPipe, private dPipe: DecimalPipe, private sPipe:CurrencySymbolNumberPipe) {
-    if (process.env.ENV == "development") {
-      window["widgetHost"] = "https://sansar.thrinacia.com";
-      window["DefaultPreferredLang"] = {
-        "defaultLang": "en",
-        "preferredLang": "en"
-      };
-    }
+    
     //getting new Default and preferred lang
     if (window["widgetHost"] && window["DefaultPreferredLang"]) {
       UtilService.setWidgetHost(window["widgetHost"]);
@@ -366,6 +366,18 @@ export class AppComponent implements OnInit {
                 this.tippingOptions = this.siteSettings["site_tipping"];
               } else {
                 this.tippingOptions = { toggle: false };
+              }
+              //grab facebook analytics information from site
+              if (this.siteSettings.hasOwnProperty("site_campaign_facebook_analytics")) {
+                let analytics = this.siteSettings["site_campaign_facebook_analytics"];
+                this.fbTrackingEnabled = analytics.toggle;
+                if (analytics.toggle) this.fbId = analytics.code;
+              }
+              //grab google analytics from site
+              if (this.siteSettings.hasOwnProperty("site_campaign_ecommerce_analytics")) {
+                let analytics = this.siteSettings["site_campaign_ecommerce_analytics"];
+                this.googleTrackingEnabled = analytics.toggle;
+                if (analytics.toggle) this.gaId = analytics.code;
               }
               if (this.siteSettings.hasOwnProperty("site_contribute_behaviour")) {
                 this.contributeBehaviour = this.siteSettings["site_contribute_behaviour"].default;
@@ -2430,8 +2442,16 @@ export class AppComponent implements OnInit {
         this.isPledgingSuccess = true;
         this.isContributionSubmitting = false;
         this.isContributionView = false;
+        if (this.fbTrackingEnabled) {
+          console.log("Facebook Pixel ID: "+this.fbId);
+          this.loadFBPixel(this.fbId);
+        }
+        if (this.googleTrackingEnabled) {
+          console.log("Google Analytics ID: "+this.gaId);
+          this.loadGoogleAnalytics(this.gaId);
+        }
+      
         this.resetPledgeParam();
-
         this.campaignPledgeRedirect();
       },
       error => {
@@ -2454,6 +2474,14 @@ export class AppComponent implements OnInit {
         this.isPledgingSuccess = true;
         this.isContributionSubmitting = false;
         this.isContributionView = false;
+        if (this.fbTrackingEnabled) {
+          console.log("Facebook Pixel ID: "+this.fbId);
+          this.loadFBPixel(this.fbId);
+        }
+        if (this.googleTrackingEnabled) {
+          console.log("Google Analytics ID: "+this.gaId);
+          this.loadGoogleAnalytics(this.gaId);
+        }
         this.resetPledgeParam();
 
         this.campaignPledgeRedirect();
@@ -2467,6 +2495,31 @@ export class AppComponent implements OnInit {
   pledgeError(error: any) {
     this.isContributionSubmitting = false;
     this.submitErrorMessage = UtilService.logError(error);
+  }
+
+  loadGoogleAnalytics(gaId: string) {
+    var newDate: any = new Date();
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*newDate;a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    (window as any).ga('create', gaId, 'auto');
+    (window as any).ga('send', 'pageview');
+  }
+
+  loadFBPixel(id: string) {
+    (function (f: any, b, e, v, n, t, s) {
+        if (f.fbq) return; n = f.fbq = function () {
+            n.callMethod ?
+                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+        }; if (!f._fbq) f._fbq = n;
+        n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0;
+        t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s)
+    })(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+    (window as any).fbq.disablePushState = true; //not recommended, but can be done
+    (window as any).fbq('init', id);
+    (window as any).fbq('track', 'PageView');
   }
 
   /**

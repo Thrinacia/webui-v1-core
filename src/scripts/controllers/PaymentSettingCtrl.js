@@ -82,6 +82,7 @@ app.controller('TabStripeCtrl', function($translate, $window, $location, $timeou
         var client_id = $scope.clientID.client_id;
         var redirect = StripeService.redirectURL();
         var state = StripeService.generateStateParam('/payment-setting');
+
         $window.location.href = "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=" + client_id + "&scope=read_write&redirect_uri=" + redirect + "&state=" + state;
       } else {
         setTimeout(function() {
@@ -169,6 +170,17 @@ app.controller('TabStripeCtrl', function($translate, $window, $location, $timeou
       return false;
     });
   }
+
+  $scope.getPayout = function(id){
+    Restangular.one('portal/account-login-link/'+id).customGET().then(function(success){
+      window.location.href = success.url;
+    }).catch(function(fail){
+      msg = {
+        'header': "You must connect a stripe account to view payouts",
+      }
+      $rootScope.floatingMessage = msg;
+    });
+  }
 });
 /*===========================================================*/
 /*----------------------- manage cards ----------------------*/
@@ -214,6 +226,7 @@ app.controller('TabCardCtrl', function($translate, $rootScope, $window, $locatio
   PortalSettingsService.getSettingsObj().then(function(success) {
     $scope.$emit("loading_finished");
     portal_settings = success.public_setting;
+    $scope.portalsetting = success.public_setting;
     $scope.site_stripe_tokenization_settings = success.public_setting.site_stripe_tokenization;
 
     //Correct If Undefined 

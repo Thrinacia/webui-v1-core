@@ -405,9 +405,9 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
     if ($scope.tippingOptions && $scope.tippingOptions.toggle) {
       if ($scope.tip.value && $scope.tip.value != 0) {
         if ($scope.tip.type == 'Dollar') {
-          $scope.pdata.amount_tip = parseFloat($scope.tip.value);
+          $scope.pdata.amount_tip = parseFloat($scope.tip.value).toFixed(2);
         } else {
-          $scope.pdata.amount_tip = (parseFloat($scope.tip.value) / 100) * $scope.user.amount;
+          $scope.pdata.amount_tip = (parseFloat($scope.tip.value) / 100).toFixed(2) * $scope.user.amount;
         }
       }
     }
@@ -535,9 +535,9 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
     if ($scope.tippingOptions && $scope.tippingOptions.toggle) {
       if ($scope.tip.value && $scope.tip.value != 0) {
         if ($scope.tip.type == 'Dollar') {
-          $scope.pdata.amount_tip = parseFloat($scope.tip.value);
+          $scope.pdata.amount_tip = parseFloat($scope.tip.value).toFixed(2);
         } else {
-          $scope.pdata.amount_tip = (parseFloat($scope.tip.value) / 100) * $scope.user.amount;
+          $scope.pdata.amount_tip = (parseFloat($scope.tip.value) / 100).toFixed(2) * $scope.user.amount;
         }
       }
     }

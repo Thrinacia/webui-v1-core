@@ -638,6 +638,26 @@ app.controller('CompleteFundingCtrl', function($translate, CampaignSettingsServi
       "redirect_uri": $scope.stripeRedirect,
       "state": $scope.stateParam
     }
+    // Express connection mode
+    if($scope.portalsetting.stripe_express_mode) {
+      baseUrl = "https://connect.stripe.com/express/oauth/authorize?";
+      params = {
+        "response_type": "code",
+        "client_id": $scope.clientID.client_id,
+        "account": $scope.clientID.client_id,
+        "stripe_user": {
+          "product_description": $scope.campaigndesc,
+          "business_name": $scope.campaignName,
+          "first_name": $scope.user.first_name,
+          "last_name": $scope.user.last_name,
+          "url": $scope.website,
+          "email": $scope.useremail,
+        },
+        "scope": "read_write",
+        "redirect_uri": $scope.stripeRedirect,
+        "state": $scope.stateParam
+      }
+    }
     var finalUrl = baseUrl + $.param(params);
     window.location.href = finalUrl;
   }

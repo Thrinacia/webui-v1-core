@@ -1848,6 +1848,30 @@
             </div>
           </div>
 
+          <!--FACEBOOK ANALYTICS BLOCK-->
+          <div class="ui two column stackable setting-bg grid">
+            <div class="four wide column">
+              <h3 class="ui header main-font-color" translate> tab_portalsetting_campaign_facebook_analytics_title </h3>
+              <p translate>tab_portalsetting_campaign_facebook_analytics_notes</p>
+            </div>
+            <div class="twelve wide column">
+              <div class="six wide column">
+                <div class="ui toggle checkbox defaultForm" ng-model="public_settings.site_campaign_facebook_analytics.toggle">
+                  <input type="checkbox" name="public">
+                  <label ng-show="public_settings.site_campaign_facebook_analytics.toggle" translate>tab_portalsetting_campaign_facebook_toggle_label_on</label>
+                  <label ng-show="!public_settings.site_campaign_facebook_analytics.toggle" translate>tab_portalsetting_campaign_facebook_toggle_label_off</label>
+                </div>
+                <div class="ui fluid form field" ng-if="public_settings.site_campaign_facebook_analytics.toggle">
+                  <div class="ui input tracking-input">
+                    <input name="tracking_code" type="text" ng-model="public_settings.site_campaign_facebook_analytics.code" ng-attr-placeholder=" {{'tab_portalsetting_campaign_fb_label' | translate}} ">
+                  </div>
+                  <br/>
+                  <em translate>tab_portalsetting_campaign_fb_header</em>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="ui two column stackable setting-bg grid">
             <div class="four wide column">
               <h3 class="ui header main-font-color" translate> tab_portalsetting_campaign_faq_title </h3>
@@ -3674,6 +3698,25 @@
                   <div class="content">
                     <div translate>tab_portalsetting_Stripesetting_message </div>
                   </div>
+                </div>
+              </div>
+
+              <div class="four wide column" ng-show="public_settings.payment_setting_enabled">
+                <h3 translate>tab_portalsetting_Stripesetting_connect_mode</h3>
+                <p translate>
+                  tab_portalsetting_Stripesetting_connect_mode_note
+                </p>
+              </div>
+              <div class="twelve wide column" ng-show="public_settings.payment_setting_enabled">
+                <div class="ui buttons">
+                  <div class="ui button" ng-click="setMode('standard')" id="standard-btn" ng-class="{'positive': public_settings.stripe_standard_mode}">
+                    <span translate>tab_portalsetting_Stripesetting_standard_mode</span>
+                  </div>
+                  <div class="or"></div>
+                  <div class="ui  button" ng-click="setMode('express')" id="express-btn" ng-class="{'positive': public_settings.stripe_express_mode}">
+                    <span translate>tab_portalsetting_Stripesetting_express_mode</span>
+                  </div>
+
                 </div>
               </div>
 

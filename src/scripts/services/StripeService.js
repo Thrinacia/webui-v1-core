@@ -26,6 +26,9 @@ app.service('StripeService', function($location, $http, APIRegister, Restangular
     //if code and scope are returned by redirect, connect the account.
     if ($location.search()['code'] && $location.search()['scope']) {
       return Restangular.one('account/stripe/connect').customPOST({ "code": $location.search()['code'], "scope": $location.search()['scope'] });
+    } else if ($location.search()['code']) {
+      // If no scope express is being used.
+      return Restangular.one('account/stripe/connect').customPOST({ "code": $location.search()['code'] });
     }
   }
 

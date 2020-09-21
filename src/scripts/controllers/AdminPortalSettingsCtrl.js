@@ -480,6 +480,18 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       $scope.stripe_live1_publishkey = $scope.stripe_setting.publishable_key;
       $scope.stripe_live1_secretkey = $scope.stripe_setting.secret_key;
     }
+
+    // if ( ($scope.standard_mode == null && $scope.express_mode == null) || 
+    //       $scope.standard_mode ) {
+    //   $scope.standard_mode = true;
+    //   $scope.express_mode = false;
+    //   $('#standard-btn').addClass('positive');
+    // } else if ($scope.express_mode) {
+    //   $scope.express_mode = true;
+    //   $scope.standard_mode = false;
+    //   $('#express-btn').addClass('positive');
+    // }
+
     if ($scope.stripe_setting.country_id) {
       // retrieve stripe currency
       $scope.setStripeCountry($scope.stripe_setting.country_id);
@@ -526,7 +538,9 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
             "publishable_key": "",
             "refresh_token": null,
             "user_id": "acct_non_valid",
-            "not_in_database": true
+            "not_in_database": true,
+            "stripe_standard_mode": true,
+            "stripe_express_mode": false
           };
           $scope.stripe_setting_origin = angular.copy($scope.stripe_setting);
 
@@ -853,6 +867,18 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
           $scope.stripe_live_clientId = $scope.private_settings.site_stripe.live.clientId;
           $scope.stripe_live_secretkey = $scope.private_settings.site_stripe.live.secretkey;
           $scope.stripe_live_publishkey = $scope.private_settings.site_stripe.live.publishkey;
+        }
+
+        // Stripe connection mode
+        if (($scope.public_settings.stripe_standard_mode == undefined && $scope.public_settings.stripe_express_mode == undefined) ||
+             $scope.public_settings.stripe_standard_mode ) {
+          $scope.public_settings.stripe_standard_mode = true;
+          $scope.public_settings.stripe_express_mode = false;
+          $('#standard-btn').addClass('positive');
+        } else if ($scope.public_settings.express_mode != undefined && $scope.public_settings.stripe_express_mode) {
+          $scope.public_settings.stripe_express_mode = true;
+          $scope.public_settings.stripe_standard_mode = false;
+          $('#express-btn').addClass('positive');
         }
 
         $scope.public_settings.site_home_page_text.main_banner.html = $scope.replaceStyleTag($scope.public_settings.site_home_page_text.main_banner.html);
@@ -1285,6 +1311,8 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
         site_campaign_country_ids: $scope.public_settings.site_campaign_country_ids,
         site_campaign_contributions: $scope.public_settings.site_campaign_contributions,
         site_campaign_contributions_instruction: $scope.public_settings.site_campaign_contributions_instruction,
+        stripe_standard_mode: $scope.public_settings.stripe_standard_mode,
+        stripe_express_mode: $scope.public_settings.stripe_express_mode,
       };
 
       Restangular.one('portal/setting/public').customPUT(publicSettings).then(function(success) {
@@ -1382,6 +1410,17 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       if (stripeAdminAccounts != null) {
         filterStripeAccount(stripeAdminAccounts, $scope.livemode);
       }
+    // Stripe connection mode
+    } else if (id === 'standard') {
+      $scope.public_settings.stripe_standard_mode = true;
+      $scope.public_settings.stripe_express_mode = false;
+      $('#standard-btn').addClass('positive');
+      $('#express-btn').removeClass('positive');
+    } else if (id === 'express') {
+      $scope.public_settings.stripe_standard_mode = false;
+      $scope.public_settings.stripe_express_mode = true;
+      $('#express-btn').addClass('positive');
+      $('#standard-btn').removeClass('positive');
     }
     // Choose Comment System
     else if (id === 'custom') {
@@ -1703,25 +1742,9 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
 
       //TODO: update the menus when add, remove or reorder the links
       if ($scope.menu_selected == 'Navigation') {
-        if (page.name.length > 16) {
-          $translate(['title_too_long']).then(function(value) {
-
-            $scope.$parent.formData.error = value.title_too_long;
-          });
-          $('.response-error-modal').modal('show');
-          insert = false;
-        }
         if ($scope.menu_links.length >= 7) {
           $translate(['too_many_links']).then(function(value) {
             $scope.$parent.formData.error = value.too_many_links;
-          });
-          $('.response-error-modal').modal('show');
-          insert = false;
-        }
-      } else {
-        if (page.name.length > 16) {
-          $translate(['footer_title_long']).then(function(value) {
-            $scope.$parent.formData.error = value.footer_title_long;
           });
           $('.response-error-modal').modal('show');
           insert = false;
@@ -2067,6 +2090,7 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       site_campaign_remove_campaign_links: $scope.public_settings.site_campaign_remove_campaign_links,
       site_campaign_remove_campaign_faq: $scope.public_settings.site_campaign_remove_campaign_faq,
       site_campaign_remove_campaign_google_analytics: $scope.public_settings.site_campaign_remove_campaign_google_analytics,
+      
       site_campaign_display_creator_info_name_only: $scope.public_settings.site_campaign_display_creator_info_name_only,
       site_campaign_creator_info_display: $scope.public_settings.site_campaign_creator_info_display,
       site_campaign_backers_list_display: $scope.public_settings.site_campaign_backers_list_display,
@@ -2106,7 +2130,9 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       site_campaign_contribution_layout_toggle_1: $scope.public_settings.site_campaign_contribution_layout_toggle_1,
       site_campaign_alt_city_input_toggle: $scope.public_settings.site_campaign_alt_city_input_toggle,
       site_campaign_express_toggle: $scope.public_settings.site_campaign_express_toggle,
+      
       site_campaign_ecommerce_analytics: $scope.public_settings.site_campaign_ecommerce_analytics,
+      site_campaign_facebook_analytics: $scope.public_settings.site_campaign_facebook_analytics,
       site_campaign_enable_campaign_revisions: $scope.public_settings.site_campaign_enable_campaign_revisions,
       site_campaign_end_hide: $scope.public_settings.site_campaign_end_hide,
       site_campaign_goog_shortener: $scope.public_settings.site_campaign_goog_shortener,
@@ -2657,7 +2683,6 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       $scope.validateTippingOptions();
       return;
     }
-    console.log($scope.private_settings)
     if($scope.private_settings.site_email_address_from){
       if(!$scope.validateEmail($scope.private_settings.site_email_address_from)){
         $scope.validateMailSendFrom();
@@ -3092,6 +3117,19 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       $scope.stripe_setting.secret_key = privateSettings.site_stripe.test.secretkey;
     }
 
+    // Stripe connection mode
+    if ($('#standard-btn').hasClass('positive')) {
+      $scope.public_settings.stripe_standard_mode = true;
+      $scope.public_settings.stripe_express_mode = false;
+      $('#standard-btn').addClass('positive');
+      $('#express-btn').removeClass('positive');
+    } else if ($('#express-btn').hasClass('positive')) {
+      $scope.public_settings.stripe_standard_mode = false;
+      $scope.public_settings.stripe_express_mode = true;
+      $('#express-btn').addClass('positive');
+      $('#standard-btn').removeClass('positive');
+    }
+
     if ($scope.testmode && isEmpty(privateSettings.site_stripe.test)) {
       $scope.stripe_no_keys = true;
     }
@@ -3223,6 +3261,16 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       if (!$scope.stripe_setting.publishable_key) {
         $scope.stripe_setting.publishable_key = "public_id_dummy";
       }
+      // Stripe connection mode
+      if (!$scope.public_settings.stripe_standard_mode && !$scope.public_settings.stripe_express_mode) {
+        $scope.public_settings.stripe_standard_mode = true;
+        $scope.public_settings.stripe_express_mode = false;
+      }
+      if (!$scope.public_settings.stripe_standard_mode && $scope.public_settings.stripe_express_mode) {
+        $scope.public_settings.stripe_standard_mode = false;
+        $scope.public_settings.stripe_express_mode = true;
+      }
+
       var save_stripe_application = Restangular.one('account/stripe/application').customPUT($scope.stripe_setting);
       paymentSettingReq.push(save_stripe_application);
 

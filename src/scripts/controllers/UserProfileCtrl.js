@@ -60,6 +60,7 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
     $scope.splitUserNameAddressToSteps = success.public_setting.site_campaign_creation_split_profile_name_address_fields_to_steps;
     $scope.makeUserProfileAddressRequired = success.public_setting.site_campaign_creation_make_user_profile_address_required;
     $scope.displayPrevButtonHeader = success.public_setting.site_campaign_creation_display_previous_button_on_header;
+    $scope.isStepRewardDelayed = success.public_setting.site_theme_campaign_delayed_reward_setup;
     // $scope.displayLaunchCampaignOnStep4 = success.public_setting.site_campaign_creation_launch_campaign_on_step4;
     $scope.bankFormEnabled = $scope.public_settings.site_campaign_country_funding_step;
 
@@ -288,6 +289,10 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
       $scope.$emit("loading_finished");
 
       $scope.campaign = success;
+
+      if($scope.isStepRewardDelayed && success.ever_published == false){
+        $scope.backUrl = "campaign-setup/" + $routeParams.campaign_id;
+      }
 
       //Default value for Profile Advanced Display
       if (!$scope.campaign['profile_type_view_id']) {

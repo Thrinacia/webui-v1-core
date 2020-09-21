@@ -410,7 +410,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
     });
     Restangular.one('campaign', campaign_id).one('ever_published').customGET().then(function(success) {
 
-      $scope.fundingExist = $scope.direct_transaction || !$scope.contributionEnabled || $scope.isStepFundingDelayed && !success.ever_published;
+      $scope.fundingExist = $scope.direct_transaction || !$scope.contributionEnabled || ($scope.isStepFundingDelayed && !success.ever_published);
       $scope.master_show_reward = false;
       if ($scope.showRewardsTab) {
         $scope.master_show_reward = true;
