@@ -197,6 +197,7 @@
                         <i class="dropdown icon"></i>
                         <div class="menu">
                           <div class="item" ng-click="editCampaign($event,campaign)"> {{'tab_campaign_campaign_edit'|translate}}</div>
+                          <div class="item" ng-if="campaignManagerHasEndDate(campaign)" ng-click="openExtendCampaignModal(campaign)"> {{'tab_campaign_extend_campaign_date_button'|translate}} </div>
                           <div class="item" ng-if="campaign.entry_status_id == 10 || campaign.entry_status_id == 12" ng-click="reviewCampaign(campaign,$event)" translate> tab_campaign_campaign_review </div>
                         </div>
                       </div>
@@ -598,6 +599,7 @@
                       <i class="dropdown icon"></i>
                       <div class="menu">
                         <div class="item" ng-click="editCampaign($event,campaign)"> {{'tab_campaign_campaign_edit'|translate}}</div>
+                        <div class="item" ng-if="campaignManagerHasEndDate(campaign)" ng-click="openExtendCampaignModal(campaign)"> {{'tab_campaign_extend_campaign_date_button'|translate}} </div>
                         <div class="item" ng-if="campaign.entry_status_id == 10 || campaign.entry_status_id == 12" ng-click="reviewCampaign(campaign,$event)" translate> tab_campaign_campaign_review </div>
                       </div>
                     </div>
@@ -730,6 +732,7 @@
                   <i class="dropdown icon"></i>
                   <div class="menu">
                     <div class="item" ng-click="editCampaign($event,campaign)"> {{'tab_campaign_campaign_edit'|translate}} </div>
+                    <div class="item" ng-if="campaignManagerHasEndDate(campaign)" ng-click="openExtendCampaignModal(campaign)"> {{'tab_campaign_extend_campaign_date_button'|translate}} </div>
                     <div class="item" ng-if="campaign.entry_status_id == 10 || campaign.entry_status_id == 12" ng-click="reviewCampaign(campaign,$event)" translate>tab_campaign_campaign_review </div>
                   </div>
                 </div>
@@ -969,6 +972,31 @@
   <div ng-include src="'views/templates/partials/admin-dashboard/manual-transaction.html'" ng-show="showManualTransactionFromCamp || showManualTransactionFromTrans"></div>
 
   <!-- Modals =================================================================================== -->
+<!-- Extend campaign modal -->
+<div class="ui small modal extend-campaign-modal">
+  <i class="close icon"></i>
+  <div class="header">
+    <h3 class="ui blue large header" translate="tab_campaign_extend_campaign_title"></h3>
+  </div>
+  <div class="content">
+    <div class="ui input grid">
+      <div class="ui sixteen wide column"><div class="ui large header">{{'tab_campaign_extend_campaign_date_set_message' | translate}}</div></div>
+      <quick-datepicker class="ui ten wide column" ng-model="setEndDate" disable-clear-button="true" date-format='EEEE, yyyy/MM/d' date-filter="noPastDates" placeholder="{{'tab_campaign_extend_campaign_end_date_placeholder' | translate}}" read-only="true"></quick-datepicker>
+      <div class="ui positive button four wide column" ng-click="setCampaignEndDate()" translate> tab_campaign_extend_campaign_date_submit </div>
+
+      <div class="ui sixteen wide column"><div class="ui huge header center aligned">{{'tab_campaign_extend_campaign_date_or_message' | translate}}</div></div>
+
+      <div class="ui sixteen wide column"><div class="ui large header">{{'tab_campaign_extend_campaign_date_extend_message' | translate}}</div></div>
+      <input class="ui ten wide column" type="text" name="runtime_days" ng-attr-placeholder="{{'tab_campaign_extend_campaign_end_days_placeholder' | translate}}" ng-model="extendEndDays" 365-only onkeydown="if (event.keyCode == 13) return false;">
+      <div class="ui positive button four wide column" ng-click="extendCampaignEndDate()" translate> tab_campaign_extend_campaign_date_submit </div>
+    </div>
+  </div>
+  <!-- CONTENT END -->
+  <div class="actions">
+  </div>
+</div>
+<!-- End of extend campaign modal -->
+
   <div class="ui small test modal">
     <i class="close icon"></i>
     <div class="header" translate>tab_campaign_transaction_details_shipping_contact</div>

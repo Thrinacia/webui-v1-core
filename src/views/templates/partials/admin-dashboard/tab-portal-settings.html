@@ -1063,6 +1063,12 @@
                     <label translate>tab_portalsetting_campaign_bottom_tip</label>
                   </div>
                 </div>
+                <div class="field">
+                  <div class="ui checkbox" ng-model="public_settings.site_campaign_combine_amount_tip">
+                    <input type="checkbox">
+                    <label translate>tab_portalsetting_campaign_combine_amount_tip</label>
+                  </div>
+                </div>
                 <div class="inline field">
                   <div class="ui checkbox" ng-model="public_settings.site_tipping.toggle_dynamic">
                     <input type="checkbox" name="tip_manual">
@@ -1424,12 +1430,6 @@
                   <div class="ui checkbox" ng-model="inlineContributionOptions.register">
                     <input type="checkbox">
                     <label translate> tab_portalsetting_allow_user_contribution</label>
-                  </div>
-                </div>
-                <div class="three wide column">
-                  <div class="ui checkbox" ng-model="inlineContributionOptions.guest">
-                    <input type="checkbox">
-                    <label translate> tab_portalsetting_allow_guest_contribution</label>
                   </div>
                 </div>
                 <div class="three wide column">
@@ -1867,6 +1867,49 @@
                   </div>
                   <br/>
                   <em translate>tab_portalsetting_campaign_fb_header</em>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!--REFERRALCANDY BLOCK-->
+          <div id = "refcandy-options" class="ui two column stackable setting-bg grid">
+            <div class="four wide column">
+              <h3 class="ui header main-font-color" translate> tab_portalsetting_campaign_referralcandy_analytics_title </h3>
+              <p translate>tab_portalsetting_campaign_referralcandy_analytics_notes</p>
+            </div>
+            <div class="twelve wide column">
+              <div class="ui toggle checkbox defaultForm" ng-model="public_settings.site_campaign_referralcandy_analytics.toggle">
+                <input type="checkbox" name="public">
+                <label ng-show="public_settings.site_campaign_referralcandy_analytics.toggle" translate>tab_portalsetting_campaign_referralcandy_toggle_label_on</label>
+                <label ng-show="!public_settings.site_campaign_referralcandy_analytics.toggle" translate>tab_portalsetting_campaign_referralcandy_toggle_label_off</label>
+              </div>
+              <div class="ui grid" ng-if="public_settings.site_campaign_referralcandy_analytics.toggle">
+                <div class="sixteen wide column">
+                  <div class="ui fluid form field">
+                    <div class="ui input tracking-input">
+                      <input name="id" type="text" ng-model="public_settings.site_campaign_referralcandy_analytics.id" ng-attr-placeholder=" {{'tab_portalsetting_campaign_rc_id_label' | translate}} ">
+                    </div>
+                    <br/>
+                    <em translate>tab_portalsetting_campaign_rc_id_header</em>
+                    <br>
+                  </div>
+                </div>
+                <div class="sixteen wide column">
+                  <div class="ui fluid form field">
+                    <div class="ui input tracking-input">
+                      <input name="secret" type="text" ng-model="private_settings.site_campaign_referralcandy_analytics_secret.secretkey" ng-attr-placeholder=" {{'tab_portalsetting_campaign_rc_secret_label' | translate}} ">
+                    </div>
+                    <br/>
+                    <em translate>tab_portalsetting_campaign_rc_secret_header</em>
+                    <br>
+                  </div>
+                </div>
+                <div class="sixteen wide column">
+                  <div class="ui checkbox" ng-model="public_settings.site_campaign_referralcandy_analytics.enable_popup">
+                    <input type="checkbox">
+                    <label translate>tab_portalsetting_campaign_rc_enable_popup</label>
+                  </div>
                 </div>
               </div>
             </div>

@@ -1253,9 +1253,11 @@ app.controller('CampaignCtrl', function($timeout, $http, $element, $anchorScroll
       // Emit event for hiding loader.
       if($scope.campaign.pledges_to_show){
         $scope.campaign.pledges_to_show.forEach(function(pledge){
-          pledge.attributes.variation.forEach(function(vari){
-            $scope.dropdown[vari.name] = 0;
-          });
+          if(pledge.attributes.variation != undefined) {
+            pledge.attributes.variation.forEach(function(vari){
+              $scope.dropdown[vari.name] = 0;
+            });
+          }
         });
       }
       $scope.$emit("loading_finished");
@@ -1852,14 +1854,16 @@ app.controller('CampaignCtrl', function($timeout, $http, $element, $anchorScroll
 
   $scope.preselectRewardAttributes = function(){
     if($scope.campaign.pledges_to_show){
-      $scope.campaign.pledges_to_show.foreach(function(pledge){
-        pledge.attributes.variation.foreach(function(vari){
-         if(!$('#dropdown-'+vari.name).dropdown('get value')){
-          $('#dropdown-'+vari.name).dropdown('set selected', vari.choice[0].value);
-          var el = $('#dropdown-'+vari.name).children()[0];
-          $(el).attr('data-attribute', vari.choice[0].value);
-         }
-        });
+      angular.forEach($scope.campaign.pledges_to_show, function(pledge){
+        if(pledge.attributes.variation != undefined) {
+          pledge.attributes.variation.foreach(function(vari){
+           if(!$('#dropdown-'+vari.name).dropdown('get value')){
+            $('#dropdown-'+vari.name).dropdown('set selected', vari.choice[0].value);
+            var el = $('#dropdown-'+vari.name).children()[0];
+            $(el).attr('data-attribute', vari.choice[0].value);
+           }
+          });
+        }
       });
     }
   };

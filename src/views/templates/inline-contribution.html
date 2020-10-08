@@ -152,6 +152,29 @@
                       <div class="amount" ng-if="pledgeAmount-campaign.pledges[pledgeindex].amount <= 0" ng-bind-html="0 | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></div>
                     </div>
                   </div>
+
+                  <!-- CUSTOMER ENTER COUPON FORM -->
+                  <div class="ui two column stackable grid pledge-amount" ng-show = "pledgeLevel && public_settings.site_campaign_coupon_management.toggle">
+                    <div class="ten wide column your-pledge">
+                      <h4 class="title" translate>pledge_campaign_enter_coupon</h4>
+                      <form ng-submit = "applyCode(couponCode)" class="ui large form contribution-form">
+                        <div class = "two fields">
+                          <div class="contribution-input">
+                            <div class="ui green button" ng-click="applyCoupon(couponCode)" translate>
+                              pledge_campaign_apply
+                            </div>
+                            <div class="input-wrap">
+                              <input name="coupon_code_input" type="text"
+                                min="{{selectedReward.amount || public_settings.site_theme_campaign_min_contribute_amount}}" ng-model="couponCode" ng-attr-allow-decimal="true">
+                            </div>
+                          </div>
+                        </div>
+                      </form>
+                      <h5 ng-show="couponAppliedMessage" class="title"><em>{{couponAppliedMessage}}</em></h5>
+                    </div>
+                  </div>
+                  <!--END CUSTOMER COUPON ENTER FORM-->
+
                   <div class="ui form" id="reward-variation-form" ng-if="enableRewardVariation">
                     <div id="reward-variation" class="reward-variation ui two column stackable grid ">
                       <div class="reward-variation-item eight wide column" ng-repeat="variation in selectedReward.attributes.variation">
@@ -414,13 +437,7 @@
                           <label> {{'guest_contribution_create_new_account'| translate}}</label>
                         </div>
                       </div>
-                      <div class="field" ng-show="(guest_contrib_option==3 && !campaign.charity_id) || (guest_contrib_option==2 && !campaign.charity_id) || (guest_contrib_option==7 && !campaign.charity_id) || (guest_contrib_option==8 && !campaign.charity_id)">
-                        <div class="ui radio checkbox" ng-model="$parent.guestOption" id="optionguest" ng-show="!campaign.pledges[pledgeindex]" ng-click="clearForm()">
-                          <input type="radio" name="guest-options" value="3">
-                          <label> {{'guest_contribution_guest_checkout' | translate}}</label>
-                        </div>
-                      </div>
-                      <div class="field" ng-show="guest_contrib_option == 5 || guest_contrib_option == 6 || guest_contrib_option == 7 || guest_contrib_option == 8">
+                      <div class="field" ng-show="guest_contrib_option==2 || guest_contrib_option==3 || guest_contrib_option == 5 || guest_contrib_option == 6 || guest_contrib_option == 7 || guest_contrib_option == 8">
                         <div class="ui radio checkbox" ng-model="$parent.guestOption" id="optionexpress" ng-click="clearForm()">
                           <input type="radio" name="guest-options" value="4">
                           <label> {{'guest_contribution_express_checkout'|translate }} </label>
@@ -949,6 +966,14 @@
                   </td>
                 </tr>
 
+                <tr ng-if="couponCodeValid && currentCoupon">
+                  <td class="payment-label" translate> pledge_campaign_your_discount </td>
+                  <td class="payment-amnt red">
+                    <span ng-if="amountDiscounted > 0" ng-bind-html="'-' + (amountDiscounted | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option)"></span>
+                    <span ng-if="amountDiscounted > 0" class="currency" ng-bind-html="campaign.currencies[0].code_iso4217_alpha"></span>
+                </td>
+                </tr>
+
                 <tr ng-if="tip.dollar_amount">
                   <td translate> guest_contribution_your_tip </td>
                   <td>
@@ -957,7 +982,7 @@
                   </td>
                 </tr>
                 
-                <tr ng-if="shippingOption.length">
+                <tr ng-if="shipOptions.length">
                   <td class="payment-label" translate> guest_contribution_your_shipping</td>
                   <td class="payment-amnt">
                     <span ng-bind-html="shipOptions[0].cost || 0 | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></span>
@@ -970,7 +995,7 @@
                 <tr>
                   <td translate> guest_contribution_total_payment </td>
                   <td>
-                    <span ng-bind-html="total(shipOptions[0].cost, tip.dollar_amount) | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></span>
+                    <span ng-bind-html="total(shipOptions[0].cost, tip.dollar_amount, currentCoupon) | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></span>
                     <span class="currency" ng-bind-html="campaign.currencies[0].code_iso4217_alpha"></span>
                   </td>
                 </tr>
@@ -1332,13 +1357,7 @@
                           <label> {{'guest_contribution_create_new_account'| translate}}</label>
                         </div>
                       </div>
-                      <div class="field" ng-show="(guest_contrib_option==3 && !campaign.charity_id) || (guest_contrib_option==2 && !campaign.charity_id) || (guest_contrib_option==7 && !campaign.charity_id) || (guest_contrib_option==8 && !campaign.charity_id)">
-                        <div class="ui radio checkbox" ng-model="$parent.guestOption" id="optionguest" ng-show="!campaign.pledges[pledgeindex]" ng-click="clearForm()">
-                          <input type="radio" name="guest-options" value="3">
-                          <label> {{'guest_contribution_guest_checkout' | translate}}</label>
-                        </div>
-                      </div>
-                      <div class="field" ng-show="guest_contrib_option == 5 || guest_contrib_option == 6 || guest_contrib_option == 7 || guest_contrib_option == 8">
+                      <div class="field" ng-show="guest_contrib_option == 2 || guest_contrib_option == 3 || guest_contrib_option == 5 || guest_contrib_option == 6 || guest_contrib_option == 7 || guest_contrib_option == 8">
                         <div class="ui radio checkbox" ng-model="$parent.guestOption" id="optionexpress" ng-click="clearForm()">
                           <input type="radio" name="guest-options" value="4">
                           <label> {{'guest_contribution_express_checkout'|translate }} </label>
@@ -1804,6 +1823,7 @@
 <div class="ui page pledge-thank-you modal">
   <div ng-bind-html="gaScript"></div>
   <div ng-bind-html="fbScript"></div>
+  <div ng-bind-html="rcScript"></div>
   <h1 class="ui icon inverted header" id="pledge-success">
     {{'guest_contribution_thankyou'| translate}}
   </h1>

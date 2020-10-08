@@ -21,6 +21,7 @@ import { StripeElement } from './model/StripeElement';
 import { CurrencyPipe } from '@angular/common';
 import { CurrencySymbolNumberPipe } from "./Pipe/CurrencySymbolNumber.pipe";
 import { DecimalPipe } from '@angular/common';
+import { Md5 } from 'ts-md5/dist/md5';
 
 declare var Stripe: any;
 declare let jQuery: any;
@@ -236,6 +237,14 @@ export class AppComponent implements OnInit {
   gaId: string = "";
   fbTrackingScript: SafeHtml;
   fbId: string = "";
+
+  referralCandyEnabled: boolean;
+  referralCandyEnablePopup: boolean;
+  referralCandyData: any = {};
+  referralCandyDiv: SafeHtml;
+
+  fullUserData: any;
+
   siteLogo: Object = {
     "image": "",
     "link": ""
@@ -250,6 +259,13 @@ export class AppComponent implements OnInit {
 
   urlTos: string;
   urlPrivacy: string;
+
+  couponCode: string;
+  currentCoupon: any;
+  amountDiscounted: number;
+  couponAppliedMessage: string;
+
+  couponManagementEnabled: boolean;
 
   siteSettings: Object = {};
   profileResourceId: number = -1;
@@ -356,6 +372,18 @@ export class AppComponent implements OnInit {
               }
               if (this.siteSettings.hasOwnProperty("site_theme_campaign_max_contribute_amount")) {
                 this.maxContributionAmount = this.siteSettings["site_theme_campaign_max_contribute_amount"];
+              }
+              if (this.siteSettings.hasOwnProperty("site_campaign_coupon_management")) {
+                this.couponManagementEnabled = this.siteSettings["site_campaign_coupon_management"].toggle;
+              }
+              if (this.siteSettings.hasOwnProperty("site_campaign_referralcandy_analytics")) {
+                var rc = this.siteSettings["site_campaign_referralcandy_analytics"];
+                this.referralCandyEnabled = rc.toggle;
+                this.referralCandyData = {
+                  appId: rc.id,
+                  //the rest to be filled in on pledge
+                }
+                this.referralCandyEnablePopup = rc.enable_popup || false;
               }
               if (this.siteSettings.hasOwnProperty("site_campaign_reward_attributes_required")) {
                 this.requireRewardAttributes = this.siteSettings["site_campaign_reward_attributes_required"];
@@ -472,7 +500,10 @@ export class AppComponent implements OnInit {
   }
 
   setUpTipping() {
-    if(this.tippingOptions.toggle_dynamic && !this.tippingOptions.toggle_tiers) {
+    if (this.tippingOptions.toggle_no_tip && this.tippingOptions.selectedTipDefault == 'no_tip') {
+      this.tipType = 'no_tip';
+    }
+    else if(this.tippingOptions.toggle_dynamic && !this.tippingOptions.toggle_tiers) {
       this.tip = {value: null, dollar_amount: 0, type: 'Dollar', name: ''};
       if(this.tippingOptions.toggle_dynamic_min_max && this.tippingOptions.dynamic_min) {
         this.tip.value = this.tippingOptions.dynamic_min;
@@ -612,6 +643,29 @@ export class AppComponent implements OnInit {
     }
   }
 
+  //COUPON APPLY
+
+  applyCoupon(couponCode: string) {
+    let plid = this.pledgeParam["pledge_level_id"];
+    this.couponAppliedMessage = this.translate("campaign_page_searching_coupon");
+    this.mCampaignService.getCouponData(ConstantsGlobal.CAMPAIGN_ID, couponCode, plid, this.authToken).subscribe(
+      coupon => {
+        this.currentCoupon = coupon;
+        this.pledgeParam["coupon_code"] = this.couponCode;
+        this.guestPledgeParam["coupon_code"] = this.couponCode;
+        this.couponAppliedMessage = this.translate("campaign_page_coupl_applied");
+        this.calculateTotalPayment();
+      },
+      error => {
+        this.currentCoupon = undefined;
+        this.amountDiscounted = 0;
+        this.couponCode = "";
+        this.couponAppliedMessage = this.translate("campaign_page_invalid_coupon");
+        this.calculateTotalPayment();
+      }
+    )
+  }
+
   /**
    * Get campaign data through API
    */
@@ -715,6 +769,8 @@ export class AppComponent implements OnInit {
     this.mUserService.getProfile(this.personId)
       .subscribe(
       res => {
+        console.log("get profile");
+        console.log(res);
         this.userInfo["first_name"] = res["first_name"];
         this.userInfo["last_name"] = res["last_name"];
         this.userInfo["profile_image"] = res.files != null && res.files.length ? ConstantsGlobal.getApiUrlCampaignProfileImage() + res.files[0].path_external : null;
@@ -1093,6 +1149,9 @@ export class AppComponent implements OnInit {
    * @param  {boolean} openAccordion optional, open accordion or not
    */
   selectReward(rewardIndex: number, openAccordion?: boolean) {
+    this.currentCoupon = undefined;
+    this.couponCode = "";
+    this.amountDiscounted = 0;
     if (rewardIndex === 0) {
       if (this.siteSettings.hasOwnProperty("site_theme_campaign_max_pledge_enabled") && this.siteSettings["site_theme_campaign_max_pledge_enabled"]) {
         this.allowMax = true;
@@ -1239,6 +1298,7 @@ export class AppComponent implements OnInit {
     this.mUserService.login(this.loginEmail, this.loginPassword).subscribe(
       data => {
         this.onLoginSuccess(data);
+        this.loadReferralCandyPopup();
       },
       error => {
         this.onLoginFailed(error);
@@ -1390,7 +1450,21 @@ export class AppComponent implements OnInit {
    * Calculate total amount to be pledged
    */
   calculateTotalPayment() {
-    this.totalAmount = parseFloat(this.contribution["amount"]) + parseFloat(this.shippingFee);
+
+    let contrib = parseFloat(this.contribution["amount"]);
+
+    if (this.currentCoupon) {
+      if (this.currentCoupon.discount_amount > 0) {
+        if (this.currentCoupon.discount_amount > contrib)
+          this.amountDiscounted = contrib;
+        else
+          this.amountDiscounted = this.currentCoupon.discount_amount;
+      } else if (this.currentCoupon.discount_percentage > 0) {
+        this.amountDiscounted = contrib * (this.currentCoupon.discount_percentage / 100.0);
+      } 
+    }
+
+    this.totalAmount = parseFloat(this.contribution["amount"]) - this.amountDiscounted + parseFloat(this.shippingFee);
     if (isNaN(this.totalAmount)) {
       this.totalAmount = 0;
     }
@@ -1401,8 +1475,10 @@ export class AppComponent implements OnInit {
     if(this.tip.value && this.tip.value != 0 && this.tip.type == 'Percent') {
       var tipAmount: number = (parseFloat(this.tip.value) / 100) * parseFloat(this.contribution["amount"]);
       
-      if(tipAmount < this.lowestAmount) {
-        tipAmount += this.lowestAmount;
+      if(!this.siteSettings["site_campaign_combine_amount_tip"]) {
+        if(tipAmount < this.lowestAmount) {
+          tipAmount += this.lowestAmount;
+        }
       }
 
       //Calculate dollar amount on init
@@ -2041,9 +2117,17 @@ export class AppComponent implements OnInit {
   onLoginSuccess(data) {
     this.isLoggedInSuccessful = true;
     this.contributionType = this.CONTRIBUTION_TYPE_LOGIN;
+    console.log(data);
     this.userInfo = {
-      "first_name": data.first_name
+      "first_name": data.first_name,
+      "last_name": data.last_name,
+      "email": data.email
     };
+    if (this.referralCandyEnabled) {
+      this.referralCandyData["email"] = data["email"];
+      this.referralCandyData["firstName"] = data["first_name"];
+      this.referralCandyData["lastName"] = data["last_name"];
+    }
     this.stripeCards = [];
     this.mUserService.getUserData(data);
     this.authToken = CookieService.getAuth();
@@ -2412,6 +2496,8 @@ export class AppComponent implements OnInit {
   }
 
   pledge() {
+    console.log("pledge "+this.contributionType);
+    console.log(this.pledgeParam);
     this.mCampaignService.pledge(ConstantsGlobal.CAMPAIGN_ID, this.pledgeParam).subscribe(
       res => {
         if (typeof this.stripeElement.cardNumber !== 'undefined' && this.stripeElement.toggle) {
@@ -2422,6 +2508,8 @@ export class AppComponent implements OnInit {
           this.getStripeAccountCard();
           this.getUserAddress();
           this.getUserPhone();
+          console.log("getting auth user data");
+          this.getAuthenticatedUserData();
         }
         else {
           //Dont log in user if they express
@@ -2429,6 +2517,8 @@ export class AppComponent implements OnInit {
             this.mUserService.login(this.loginEmail, this.loginPassword).subscribe(
               data => {
                 this.onLoginSuccess(data);
+                console.log(data);
+                this.loadReferralCandyPopup();
               },
               error => {
                 this.onLoginFailed(error);
@@ -2436,12 +2526,14 @@ export class AppComponent implements OnInit {
             );
           } else {
             //Clear express
-            this.clearExpressForm();
+            
           }
         }
+
         this.isPledgingSuccess = true;
         this.isContributionSubmitting = false;
         this.isContributionView = false;
+
         if (this.fbTrackingEnabled) {
           console.log("Facebook Pixel ID: "+this.fbId);
           this.loadFBPixel(this.fbId);
@@ -2451,8 +2543,37 @@ export class AppComponent implements OnInit {
           this.loadGoogleAnalytics(this.gaId);
         }
       
+        if (this.referralCandyEnabled) {
+
+          this.referralCandyData["invoiceNumber"] = res.entry_backer_id;
+
+          console.log(this.userInfo);
+          console.log(this.expressRegisterInfo);
+          console.log(this.guestPledgeParam);
+          console.log(this.pledgeAttributes);
+          console.log(this.pledgeParam);
+          console.log(this.loginEmail);
+          
+          if (this.contributionType == this.CONTRIBUTION_TYPE_EXPRESS) {
+            this.referralCandyData["email"] = this.expressRegisterInfo["email"];
+            this.referralCandyData["firstName"] = this.expressRegisterInfo["first_name"];
+            this.referralCandyData["lastName"] = this.expressRegisterInfo["last_name"];
+          } else if (this.contributionType == this.CONTRIBUTION_TYPE_LOGIN) {
+            this.referralCandyData["email"] = this.userInfo["email"];
+            this.referralCandyData["firstName"] = this.userInfo["first_name"];
+            this.referralCandyData["lastName"] = this.userInfo["last_name"];
+          }
+
+          this.referralCandyData["amount"] = this.pledgeParam["amount"];
+          this.referralCandyData["unixTimestamp"] = Math.floor(Date.now() / 1000);
+          this.referralCandyData["currencyCode"] = this.mCampaign.currencies[0].code_iso4217_alpha;
+
+          this.loadReferralCandyPopup();
+        }
+
         this.resetPledgeParam();
         this.campaignPledgeRedirect();
+        this.clearExpressForm();
       },
       error => {
         this.pledgeError(error);
@@ -2464,6 +2585,7 @@ export class AppComponent implements OnInit {
   }
 
   pledgeAsGuest() {
+    console.log("pledge as guest "+this.contributionType);
     this.mCampaignService.pledgeAsGuest(ConstantsGlobal.CAMPAIGN_ID, this.guestPledgeParam)
       .subscribe(
       res => {
@@ -2474,17 +2596,33 @@ export class AppComponent implements OnInit {
         this.isPledgingSuccess = true;
         this.isContributionSubmitting = false;
         this.isContributionView = false;
+
         if (this.fbTrackingEnabled) {
           console.log("Facebook Pixel ID: "+this.fbId);
           this.loadFBPixel(this.fbId);
         }
+
         if (this.googleTrackingEnabled) {
           console.log("Google Analytics ID: "+this.gaId);
           this.loadGoogleAnalytics(this.gaId);
         }
-        this.resetPledgeParam();
 
-        this.campaignPledgeRedirect();
+        if (this.referralCandyEnabled) {
+          console.log(this.mCampaign);
+          this.referralCandyData["invoiceNumber"] = res.entry_backer_id;
+          this.referralCandyData["email"] = this.guestPledgeParam["email"];
+          this.referralCandyData["amount"] = this.guestPledgeParam["amount"];
+          this.referralCandyData["unixTimestamp"] = Math.floor(Date.now() / 1000);
+          this.referralCandyData["firstName"] = "Guest";
+          this.referralCandyData["lastName"] = "";
+          this.referralCandyData["currencyCode"] = this.mCampaign.currencies[0].code_iso4217_alpha;
+
+          this.loadReferralCandyPopup();
+        } else {
+          this.campaignPledgeRedirect();
+        }
+        this.resetPledgeParam();
+        
       },
       error => {
         this.pledgeError(error);
@@ -2520,6 +2658,148 @@ export class AppComponent implements OnInit {
     (window as any).fbq.disablePushState = true; //not recommended, but can be done
     (window as any).fbq('init', id);
     (window as any).fbq('track', 'PageView');
+  }
+
+  loadReferralCandyPopup() {
+
+    //don't do anything if no first name exists
+    if (!this.referralCandyEnabled || !this.referralCandyData.firstName || !this.referralCandyData.email) return;
+
+    this.mSettingsService.getReferralCandyHash(
+      this.referralCandyData.email, 
+      this.referralCandyData.firstName,
+      this.referralCandyData.amount,
+      this.referralCandyData.unixTimestamp)
+    .subscribe(res => {
+      console.log("res = ");
+      console.log(res);
+
+      this.referralCandyData.hash = res.signature;
+
+      console.log(this.referralCandyEnabled);
+      console.log(this.referralCandyData);
+
+      if(this.referralCandyEnablePopup){
+        //this function is from referral candy
+        (function(e, data){
+          var t,n,r,i,s,o,u,a,f,l,c,h,p,d,v,z;
+          z="script";
+          l="refcandy-purchase-js";
+          c="refcandy-popsicle";
+          p="go.referralcandy.com/purchase/";
+          t="data-app-id";
+          r={email:"a",fname:"b",lname:"c",amount:"d",currency:"e","accepts-marketing":"f",timestamp:"g","referral-code":"h",locale:"i","external-reference-id":"k",signature:"ab"};
+          i=e.getElementsByTagName(z)[0];
+          s=function(e,t){if(t){return""+e+"="+encodeURIComponent(t)}else{return""}};
+          console.log(l);
+          console.log(e.getElementById(l));
+          d=function(e){return""+p+h.getAttribute(t)+".js?lightbox=1&aa=75&"};
+          if(!e.getElementById(l)){
+            h=e.getElementById(c);
+            console.log(c);
+            console.log(h);
+            if(h){
+
+              //CUSTOM: mod the rc data div
+              h.setAttribute("data-app-id", data.appId);
+              h.setAttribute("data-fname", data.firstName);
+              h.setAttribute("data-lname", data.lastName);
+              h.setAttribute("data-email", data.email);
+              h.setAttribute("data-amount", data.amount);
+              h.setAttribute("data-currency", data.currencyCode);
+              h.setAttribute("data-timestamp", data.unixTimestamp);
+              h.setAttribute("data-external-reference-id", data.invoiceNumber);
+              h.setAttribute("data-signature", data.hash);
+
+              console.log(h);
+
+              o=e.createElement(z);o.id=l;
+              a=function(){var e;e=[];for(n in r){u=r[n];v=h.getAttribute("data-"+n);e.push(s(u,v))}return e}();
+              o.src="//"+d(h.getAttribute(t))+a.join("&");
+              console.log(o.src);
+              return i.parentNode.insertBefore(o,i)
+            }
+          }
+        })(document, this.referralCandyData);
+      }
+      else {
+        (function (e, data)
+        {
+          var t, n, r, i, s, o, u, a, f, l, c, h, p, d, v, z;
+          z = "script";
+          l = "refcandy-purchase-js";
+          c = "refcandy-mint";
+          p = "go.referralcandy.com/purchase/";
+          t = "data-app-id";
+          r = {
+            email: "a",
+            fname: "b",
+            lname: "c",
+            amount: "d",
+            currency: "e",
+            "accepts-marketing": "f",
+            timestamp: "g",
+            "referral-code": "h",
+            locale: "i",
+            "external-reference-id": "k",
+            signature: "ab"
+          };
+          i = e.getElementsByTagName(z)[0];
+          s = function (e, t)
+          {
+            if (t)
+            {
+              return "" + e + "=" + encodeURIComponent(t)
+            }
+            else
+            {
+              return ""
+            }
+          };
+          d = function (e)
+          {
+            return "" + p + h.getAttribute(t) + ".js?aa=75&"
+          };
+          if (!e.getElementById(l))
+          {
+            h = e.getElementById(c);
+            if (h)
+            {
+
+              //CUSTOM: mod the rc data div
+              h.setAttribute("data-app-id", data.appId);
+              h.setAttribute("data-fname", data.firstName);
+              h.setAttribute("data-lname", data.lastName);
+              h.setAttribute("data-email", data.email);
+              h.setAttribute("data-amount", data.amount);
+              h.setAttribute("data-currency", data.currencyCode);
+              h.setAttribute("data-timestamp", data.unixTimestamp);
+              h.setAttribute("data-external-reference-id", data.invoiceNumber);
+              h.setAttribute("data-signature", data.hash);
+
+              o = e.createElement(z);
+              o.id = l;
+              a = function ()
+              {
+                var e;
+                e = [];
+                for (n in r)
+                {
+                  u = r[n];
+                  v = h.getAttribute("data-" + n);
+                  e.push(s(u, v))
+                }
+                return e
+              }();
+              o.src = "//" + d(h.getAttribute(t)) + a.join("&");
+              return i.parentNode.insertBefore(o, i)
+            }
+          }
+        })(document, this.referralCandyData);
+      }
+
+    });
+
   }
 
   /**
@@ -2566,6 +2846,19 @@ export class AppComponent implements OnInit {
           this.isAddingPhone = false;
           this.selectAddress(this.phoneList[0]);
         }
+      },
+      error => UtilService.logError(error)
+    );
+  }
+  
+  getAuthenticatedUserData() {
+    this.mUserService.getAuthenticatedUser().subscribe(
+      res => {
+        this.fullUserData = res;
+        console.log("full user data");
+        console.log(this.fullUserData);
+        this.referralCandyData["email"] = this.fullUserData.email;
+        this.loadReferralCandyPopup();
       },
       error => UtilService.logError(error)
     );
@@ -2916,11 +3209,13 @@ export class AppComponent implements OnInit {
     //   return parseFloat(a.dollar_amount) - parseFloat(b.dollar_amount);
     // });
 
-    this.tippingOptions.tiers.forEach((value, index) => {
-      if(value.type == "Percent" && (value.dollar_amount < this.lowestAmount)) {
-        value.dollar_amount += this.lowestAmount;
-      }
-    });
+    if(!this.siteSettings["site_campaign_combine_amount_tip"]) {
+      this.tippingOptions.tiers.forEach((value, index) => {
+        if(value.type == "Percent" && (value.dollar_amount < this.lowestAmount)) {
+          value.dollar_amount += this.lowestAmount;
+        }
+      });
+    }
 
   }
 

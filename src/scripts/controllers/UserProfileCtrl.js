@@ -247,7 +247,7 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
   // to generate the dropdown selection
 
   function getCompany() {
-    Restangular.one('account/').customGET('business', paramID.business_organization_id).then(function(success) {
+    Restangular.one('account/business').customGET(paramID.business_organization_id).then(function(success) {
       $scope.companies = success;
       if ($scope.companies.length != 0) {
         $scope.companyFormToggle = true;
@@ -337,14 +337,7 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
             }
           }
         }
-      });
-
-      // For now, there is only 1 manager
-      // Check condition, if this array has items, have paramID's person_id to have this value
-      if (campaignManagerId.length == 1) {
-        paramID.person_id = campaignManagerId[0];
-        getCompany();
-      }
+      }); 
 
       //prefill business (prefilling one for now)
       if ($scope.campaign.business_organizations) {
@@ -353,12 +346,18 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
           $scope.companyFormToggle = true;
         }
         $scope.company_selected = $scope.campaign.business_organizations[0].business_organization_id;
+        paramID.business_organization_id = $scope.campaign.business_organizations[0].business_organization_id;
         $scope.getBusinessLinks($scope.company_selected);
         $scope.getBusinessImage();
         $scope.getBusinessNameDescription($scope.company_selected);
         $('#default-ctext').text($scope.campaign.business_organizations[0].name);
       }
-
+      // For now, there is only 1 manager
+      // Check condition, if this array has items, have paramID's person_id to have this value
+      if (campaignManagerId.length == 1) {
+        paramID.person_id = campaignManagerId[0];
+        getCompany();
+      }
       getAddress(paramID)
       getPhoneNumber(paramID);
       $scope.businessLinks = [];

@@ -68,6 +68,7 @@ app.run(function($sce, $http, $window, $rootScope, $route, $location, $templateC
   $translatePartialLoader.addPart('subscription-settings');
   $translatePartialLoader.addPart('tab-report');
   $translatePartialLoader.addPart('tab-user');
+  $translatePartialLoader.addPart('tab-coupon');
   $translatePartialLoader.addPart('tab-category');
   $translatePartialLoader.addPart('tab-campaign');
   $translatePartialLoader.addPart('tab-page');
@@ -767,10 +768,17 @@ app.controller('MainCtrl', ['$scope', '$location', 'UserService', 'Restangular',
       }
     });
     $(window).scroll(function() {
+      var saveheight = $(document).height()
+      saveheight = saveheight - 1000
       if ($(this).scrollTop() > 220) {
         $('#back-to-top').fadeIn();
       } else {
         $('#back-to-top').fadeOut();
+      }
+      if ($(this).scrollTop() < saveheight) {
+        $('#scroll-to-bottom').fadeIn();
+      } else {
+        $('#scroll-to-bottom').fadeOut();
       }
     });
 
@@ -778,6 +786,16 @@ app.controller('MainCtrl', ['$scope', '$location', 'UserService', 'Restangular',
     $scope.backToTop = function() {
       $('html,body').animate({
         scrollTop: 0
+      }, 800);
+      return false;
+    }
+
+    $scope.scrollToBottom = function() {
+      var saveheight = $(document).height()
+      saveheight = saveheight - 900
+      console.log(saveheight)
+      $('html,body').animate({
+        scrollTop: saveheight
       }, 800);
       return false;
     }

@@ -30,6 +30,7 @@
 	"complete_funding_stripe_message2": "Create a New Stripe Account/Connection:",
 	"complete_funding_stripe_button": "Connect with Stripe",
 	"complete_funding_stripe_default":"Select an account",
+	"complete_funding_untitled_stripe_account": "Untitled Stripe Account",
 	"complete_funding_stripe_direct_transaction_enabled":"Direct Transaction Mode is on. Only admin can view this page.",
 	"complete_funding_stripe_connect_notes": "Connect your Stripe account to this campaign in order to receive your payments. <a href='https://www.thrinacia.com/blog/post/creating-a-campaign-and-connecting-your-stripe-account' target='_blank'>Click here</a> for more information about connecting your stripe account.",
 	"complete_funding_stripe_connect_modal_title": "Warning",

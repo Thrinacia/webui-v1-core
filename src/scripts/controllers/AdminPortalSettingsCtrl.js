@@ -702,6 +702,9 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
             $scope.public_settings.site_tipping.tiers.length = 0;
           }
         }
+        if (typeof $scope.public_settings.site_campaign_combine_amount_tip == 'undefined') {
+          $scope.public_settings.site_campaign_combine_amount_tip = false;
+        }
 
         if (typeof $scope.public_settings.logo_links == 'undefined') {
           $scope.public_settings.logo_links = [];
@@ -1964,6 +1967,14 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
     $scope.public_settings.site_tip_currency = currency;
   }
 
+  $scope.scrollTo = function(idOrClass) {
+    setTimeout(function() { 
+      jQuery("html, body").animate({
+        scrollTop: jQuery(idOrClass).offset().top - 15
+      }, "fast");
+    });
+  }
+
   $scope.saveCampaignSetting = function() {
 
     msg = {
@@ -2020,6 +2031,23 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
         return;
       }
     }
+
+    //make sure all referralcandy data is integrated
+    if ($scope.public_settings.site_campaign_referralcandy_analytics && $scope.public_settings.site_campaign_referralcandy_analytics.toggle) {
+      if (!$scope.public_settings.site_campaign_referralcandy_analytics.id 
+        || !$scope.private_settings.site_campaign_referralcandy_analytics_secret
+        || !$scope.private_settings.site_campaign_referralcandy_analytics_secret.secretkey) {
+          var translate = $translate.instant(['tab_portalsetting_campaign_missing_referralcandy_info']);
+          msg = {
+            'header': translate.tab_portalsetting_campaign_missing_referralcandy_info
+          };
+          $rootScope.floatingMessage = msg;
+          $scope.hideFloatingMessage();
+          $scope.scrollTo("#refcandy-options");
+          return;
+      }
+    }
+
     var publicSettings = {
       site_theme_no_campaign_message: $scope.public_settings.site_theme_no_campaign_message,
       site_theme_campaign_grid_display: $scope.public_settings.site_theme_campaign_grid_display,
@@ -2133,6 +2161,8 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       
       site_campaign_ecommerce_analytics: $scope.public_settings.site_campaign_ecommerce_analytics,
       site_campaign_facebook_analytics: $scope.public_settings.site_campaign_facebook_analytics,
+      site_campaign_referralcandy_analytics: $scope.public_settings.site_campaign_referralcandy_analytics,
+      site_campaign_coupon_management: $scope.public_settings.site_campaign_coupon_management,
       site_campaign_enable_campaign_revisions: $scope.public_settings.site_campaign_enable_campaign_revisions,
       site_campaign_end_hide: $scope.public_settings.site_campaign_end_hide,
       site_campaign_goog_shortener: $scope.public_settings.site_campaign_goog_shortener,
@@ -2181,6 +2211,7 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
     };
     var privateSettings = {
       site_hide_transaction_details_campaign_manager: $scope.private_settings.site_hide_transaction_details_campaign_manager,
+      site_campaign_referralcandy_analytics_secret: $scope.private_settings.site_campaign_referralcandy_analytics_secret
     }
     if (!$scope.public_settings.site_campaign_defaults.toggle) {
       $scope.public_settings.site_campaign_defaults.hide_fundraise = false;
@@ -2621,7 +2652,6 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       return false;
     }
 
-    console.log('email '+email+' is valid') 
     return true;
   }
   $scope.validateMailSendFrom = function() {
@@ -2736,14 +2766,14 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       if (value && key == 'register') {
         register = true;
       }
-      if (value && key == 'guest') {
-        guest = true;
-      }
-      if (value && key == 'express') {
+      // Guest checkout is legacy now, use express instead
+      if (value && key == 'express' || 
+          value && key == 'guest') {
         express = true;
       }
     });
 
+    // Guest checkout is removed
     // public_setting.site_contribute_behaviour.default = 1 //(Register Only)
     // public_setting.site_contribute_behaviour.default = 2 //(Guest Only)
     // public_setting.site_contribute_behaviour.default = 3 //(Register and Guest)
@@ -2809,6 +2839,7 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       site_enable_cookie_consent: $scope.public_settings.site_enable_cookie_consent,
       site_disable_unsupported_browsers: $scope.public_settings.site_disable_unsupported_browsers,
       site_tipping: $scope.public_settings.site_tipping,
+      site_campaign_combine_amount_tip: $scope.public_settings.site_campaign_combine_amount_tip,
       site_tip_currency: $scope.public_settings.site_tip_currency
     };
 

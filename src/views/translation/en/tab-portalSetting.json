@@ -585,6 +585,13 @@
   "tab_portalsetting_campaign_facebook_analytics_notes": "This controls Facebook Pixel settings.",
   "tab_portalsetting_remove_campaign_facebook_analytics": "Hide Per Campaign Facebook Analytics",
 
+  "tab_portalsetting_campaign_coupon_management_title": "Campaign Coupons",
+  "tab_portalsetting_campaign_coupon_management_notes": "Enable or disable customer checkout coupons on rewards.",
+
+  "tab_portalsetting_campaign_referralcandy_analytics_title": "ReferralCandy Integration",
+  "tab_portalsetting_campaign_referralcandy_analytics_notes": "Change settings related to ReferralCandy.",
+
+
   "tab_portalsetting_creator_info_title": "Campaign Creator Info",
   "tab_portalsetting_creator_info_notes": "Display options for project creator. <span style='color: red;'>WARNING</span> Before enabling these toggles please read this <a href='https://www.thrinacia.com/blog/post/enabling-alternative-layouts-for-your-crowdfunding-site' target='_blank'>article</a>.",
   "tab_portalsetting_display_creator_info_name_only": "Display creator name only on campaign header",
@@ -700,10 +707,22 @@
   "tab_portalsetting_campaign_ea_label": "Tracking Code",
   "tab_portalsetting_campaign_fb_header": "Specify Facebook Pixel ID. The ID is a large number like 349857983475 for example. Do not paste the snippet of code here.",
   "tab_portalsetting_campaign_fb_label": "Pixel ID",
+  "tab_portalsetting_campaign_rc_id_header": "Your plugin app ID can be found in your ReviewCandy profile settings.",
+  "tab_portalsetting_campaign_rc_id_label": "Plugin App ID",
+  "tab_portalsetting_campaign_rc_secret_header": "Your plugin secret key can be found in your ReviewCandy profile settings.",
+  "tab_portalsetting_campaign_rc_secret_label": "Plugin Secret Key",
+  "tab_portalsetting_campaign_rc_enable_popup": "Enable Post-Purchase popup widget",
+  "tab_portalsetting_campaign_missing_referralcandy_info": "Whoops! Looks like you forgot your ReferralCandy plugin ID and Secret Key.",
+
   "tab_portalsetting_campaign_ea_toggle_label_off": "Enable Google Analytics Tracking",
   "tab_portalsetting_campaign_ea_toggle_label_on": "Disable Google Analytics Tracking",
   "tab_portalsetting_campaign_facebook_toggle_label_off": "Enable Facebook Analytics Tracking",
   "tab_portalsetting_campaign_facebook_toggle_label_on": "Disable Facebook Analytics Tracking",
+  "tab_portalsetting_campaign_coupon_management_toggle_label_off": "Enable Coupon Functionality",
+  "tab_portalsetting_campaign_coupon_management_toggle_label_on": "Disable Coupon Functionality",
+  "tab_portalsetting_campaign_referralcandy_toggle_label_off": "Enable ReferralCandy Integration",
+  "tab_portalsetting_campaign_referralcandy_toggle_label_on": "Disable ReferralCandy Integration",
+
   "tab_portalsetting_site_auto_expand_subcat_label": "Auto Select All Subcategories When Expanding Parent Category",
   "tab_portalsetting_campaign_goog_header": "Campaign URL Sharing",
   "tab_portalsetting_campaign_goog_note": "This option allows you to automatically shorten your campaign URL when sharing it to other websites via sharing options",
@@ -753,6 +772,7 @@
   "tab_portalsetting_campaign_tipping_force": "Force Immediate Tip Processing",
   "tab_portalsetting_campaign_tipping_currency_label": "Select tipping currency",
   "tab_portalsetting_campaign_bottom_tip": "Move Tipping to Bottom of Summary",
+  "tab_portalsetting_campaign_combine_amount_tip": "Combine Tip and Contribution Amount",
   "tab_portalsetting_campaign_tipping_toggle_manual": "Enable Manual Tip",
   "tab_portalsetting_campaign_tipping_toggle_min_max": "Enable Manual Tip Min/Max Thresholds",
   "tab_portalsetting_campaign_tipping_manual_min": "Min Amount",

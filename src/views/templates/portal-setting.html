@@ -12,6 +12,7 @@
 						<a class="item" data-tab="users" ng-click="clickHash('users')" translate="portal_setting_user"></a>
 						<a class="item" data-tab="categories" ng-click="clickHash('categories')" translate="portal_setting_categories"></a>
 						<a class="item" data-tab="campaigns" ng-click="clickHash('campaigns')" translate="portal_setting_campaign"></a>
+						<a class="item" data-tab="coupons" ng-click="clickHash('coupons')" translate="portal_setting_coupon"></a>
 						<a class="item" data-tab="pages" ng-click="clickHash('pages')" translate="portal_setting_pages"></a>
 						<a class="item" data-tab="portal-settings" ng-click="clickHash('portal-settings')" translate="portal_setting_portal_setting"></a>
 						<a class="item" data-tab="web-settings" ng-click="clickHash('web-settings')" translate="portal_setting_webhook_setting"></a>
@@ -42,6 +43,11 @@
 			<div class="ui tab" data-tab="campaigns">
 				<div ng-if="showcampaigns">
 					<div class="menu-tab-content" ng-include src="'views/templates/partials/admin-dashboard/tab-campaigns.html'" ng-controller="AdminCampaignsCtrl"></div>
+				</div>
+			</div>
+			<div class="ui tab" data-tab="coupons">
+				<div ng-if="showcoupons">
+					<div class="menu-tab-content" ng-include src="'views/templates/partials/admin-dashboard/tab-coupons.html'" ng-controller="AdminCouponsCtrl"></div>
 				</div>
 			</div>
 			<div class="ui tab" data-tab="pages">

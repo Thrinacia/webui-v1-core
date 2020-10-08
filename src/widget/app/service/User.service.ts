@@ -50,6 +50,15 @@ export class UserService {
     UserService.getAuthFromCookie();
   }
 
+  getAuthenticatedUser() {
+    UserService.getAuthFromCookie();
+    let headers = new Headers({ 'Content-Type': 'application/json' });
+    headers.append("X-Auth-Token", UserService.authToken);
+    let options = new RequestOptions({ headers: headers });
+    return this.http.get(ConstantsGlobal.getApiUrlAuth(), options)
+      .map(res => res.json());
+  }
+
   /**
    * Register user with provided info
    * @param  {Object}     registerParam parameter for registering

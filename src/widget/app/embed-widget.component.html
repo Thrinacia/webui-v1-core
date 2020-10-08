@@ -713,20 +713,6 @@
         </div>
       </div>
     </div>
-    <!--div *ngIf="fbTrackingEnabled">
-      <script>console.log('Facebook Pixel ready with ID953268825184963');!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};"+
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init', '953268825184963');
-      </script><noscript><img height='1' width='1' style='display:none'src='https://www.facebook.com/tr?id=953268825184963&ev=PageView&noscript=1'/></noscript>
-      <div *ngIf="isPledgingSuccess"></div>
-    </div-->
-    <div *ngIf="isPledgingSuccess">
-      <script>console.log('Facebook Pixel ready with ID953268825184963');!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};"+
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init', '953268825184963');
-      </script>
-    </div>
-    <!--div [innerHTML]="fbTrackingScript"></div-->
     <div class="message-container" *ngIf="isPledgingSuccess">
       <div class="message-subcontainer">
         <div class="message-content ui message" (click)="closeMessage()">
@@ -1121,6 +1107,7 @@
                     </div>
                   </div>
                 </div>
+
                 <div class="website-tip ui form" *ngIf="tippingOptions.toggle">
                   <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_tipping_header")}}</h2>
                   <div class="field">
@@ -1166,6 +1153,27 @@
                     </div>
                   </div>
                 </div>
+
+                <!--COUPON ENTER FIELD-->
+                <div *ngIf = "rewardIndex > 0 && couponManagementEnabled" class="website-tip ui form">
+                  <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_coupon_header")}}</h2>
+                  <div class = "ui large form">
+                    <div class="two fields">
+                      <div class = "field">
+                        <div class="ui left labeled input">
+                          <div class="ui green button" (click)="applyCoupon(couponCode)">
+                            {{translate("campaign_page_coupon_apply")}}
+                          </div>
+                          <input type="text" name="coupon_code" [(ngModel)]="couponCode" (keyup.enter)="applyCoupon(couponCode)"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <h5 *ngIf="currentCoupon && currentCoupon.discount_amount > 0"><em>{{tipInfo.code_iso4217_alpha | currencySymbolNumber}}{{currentCoupon.discount_amount+" "+translate("campaign_page_discount_applied")}}</em></h5>
+                  <h5 *ngIf="currentCoupon && currentCoupon.discount_percentage > 0"><em>{{currentCoupon.discount_percentage+"% "+translate("campaign_page_discount_applied")}}</em></h5>
+                  <h5 *ngIf="!currentCoupon && couponAppliedMessage"><em>{{couponAppliedMessage}}</em></h5>
+                </div>
+
                 <div class="attributes-info ui form" *ngIf="contribution.attributes">
                   <div class="fields" *ngIf="contribution.attributes.variation">
                     <div class="eight wide field" *ngFor="let attribute of contribution.attributes.variation; let vIndex = index">
@@ -1203,6 +1211,15 @@
                         </td>
                         <td *ngIf="settingDecimalOption == 3" PaymentFontColor>
                           {{ mCampaign.currencies[0].code_iso4217_alpha | currencySymbolNumber}} {{shippingFee | number:'1.0-0'}} {{mCampaign.currencies[0]["code_iso4217_alpha"]}}
+                        </td>
+                      </tr>
+                      <tr *ngIf="currentCoupon && amountDiscounted > 0">
+                        <td PaymentFontColor><strong>{{translate("campaign_page_review_discount_text")}}</strong></td>
+                        <td *ngIf="settingDecimalOption == 1 || settingDecimalOption == 2" PaymentFontColor>
+                          -{{ mCampaign.currencies[0].code_iso4217_alpha | currencySymbolNumber}} {{amountDiscounted | number:'1.2-2' }} {{mCampaign.currencies[0]["code_iso4217_alpha"]}}
+                        </td>
+                        <td *ngIf="settingDecimalOption == 3" PaymentFontColor>
+                          -{{ mCampaign.currencies[0].code_iso4217_alpha | currencySymbolNumber}} {{amountDiscounted | number:'1.0-0'}} {{mCampaign.currencies[0]["code_iso4217_alpha"]}}
                         </td>
                       </tr>
                     </tbody>
@@ -1377,3 +1394,6 @@
       </div>
     </div>
   </div>
+
+  <div id="refcandy-popsicle"></div>
+  <div id="refcandy-mint"></div>

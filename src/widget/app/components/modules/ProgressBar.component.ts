@@ -28,7 +28,12 @@ export class ProgressComponent {
     jQuery("#" + this.progressID).progress({
       percent: this.progressValue
     });
-
   }
 
+  ngOnChanges() {
+    this.progressValue = this.progressValue >= 100 ? 100 : this.progressValue;
+    jQuery("#" + this.progressID).progress({
+      percent: this.progressValue
+    });
+  }
 }

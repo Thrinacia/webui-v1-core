@@ -91,6 +91,7 @@
                   <button class="ui small basic button" ng-click="manageStream(campaign)" translate="campaign_management_managestream_button"></button>
                   <button class="ui small basic button" ng-class="{'disabled':campaign.too_late_capture}" ng-if="campaign.entry_status_id == 7" ng-click="changeCampaignStatus(campaign, 6)" translate="campaign_management_acceptcapture_button"></button>
                   <button class="ui small basic button" ng-if="campaignManagerTransactionHide(campaign)" ng-click="getTransecStats(campaign.id)" translate="campaign_management_transaction_button"></button>
+                  <button class="ui small basic button" ng-if="campaignManagerHasEndDate(campaign)" ng-click="openExtendCampaignModal(campaign)" translate="campaign_management_extend_campaign_date_button"></button>
                 </div>
 
                 <div class="three wide right aligned column right-col" ng-show="campaign.entry_status_id != 11">
@@ -220,6 +221,31 @@
 </div>
 
 <!-- ===================================== MODALS ====================================-->
+
+<!-- Extend campaign modal -->
+<div class="ui small modal extend-campaign-modal">
+  <i class="close icon"></i>
+  <div class="header">
+    <h3 class="ui blue large header" translate="campaign_management_extend_campaign_title"></h3>
+  </div>
+  <div class="content">
+    <div class="ui input grid">
+      <div class="ui sixteen wide column"><div class="ui large header">{{'campaign_management_extend_campaign_date_set_message' | translate}}</div></div>
+      <quick-datepicker class="ui ten wide column" ng-model="setEndDate" disable-clear-button="true" date-format='EEEE, yyyy/MM/d' date-filter="noPastDates" placeholder="{{'campaign_management_extend_campaign_end_date_placeholder' | translate}}" read-only="true"></quick-datepicker>
+      <div class="ui positive button four wide column" ng-click="setCampaignEndDate()" translate> campaign_management_extend_campaign_date_submit </div>
+
+      <div class="ui sixteen wide column"><div class="ui huge header center aligned">{{'campaign_management_extend_campaign_date_or_message' | translate}}</div></div>
+
+      <div class="ui sixteen wide column"><div class="ui large header">{{'campaign_management_extend_campaign_date_extend_message' | translate}}</div></div>
+      <input class="ui ten wide column" type="text" name="runtime_days" ng-attr-placeholder="{{'campaign_management_extend_campaign_end_days_placeholder' | translate}}" ng-model="extendEndDays" 365-only onkeydown="if (event.keyCode == 13) return false;">
+      <div class="ui positive button four wide column" ng-click="extendCampaignEndDate()" translate> campaign_management_extend_campaign_date_submit </div>
+    </div>
+  </div>
+  <!-- CONTENT END -->
+  <div class="actions">
+  </div>
+</div>
+<!-- End of extend campaign modal -->
 
 <div class="ui small modal cancel-multi-campaign-modal">
   <i class="close icon"></i>

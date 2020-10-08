@@ -1233,6 +1233,26 @@ button:disabled {
   }
 }
 
+#scroll-to-bottom {
+  display: block;
+  position: fixed;
+  bottom: 0px;
+  right: 50px;
+  text-align: center;
+  margin-right: 1em;
+  z-index: 1000;
+  margin-bottom: 1.25em;
+
+  &:hover {
+    i.circular.icon:hover {
+      background: #ccc;
+      color: #333;
+      -webkit-transition: all 0.3s ease-in-out;
+      transition: all 0.3s ease-in-out;
+    }
+  }
+}
+
 /*Progress Bar - Campaigns*/
 
 .bar-progress.ui.progress {
@@ -1634,4 +1654,18 @@ i.circular.icon {
   z-index: 9999;
   padding: 1rem;
   text-align: center;
+}
+
+.extend-campaign-modal {
+	.content {
+		div.ui.grid {
+			.quickdate {
+				padding: 0px;
+				margin: 0px 15px;
+			}
+			input {
+				margin: 0px 15px;
+			}
+		}
+	}
 }

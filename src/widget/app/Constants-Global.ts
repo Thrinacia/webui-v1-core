@@ -62,6 +62,12 @@ export class ConstantsGlobal {
   public static getApiUrlPhoneNumber() {
     return ConstantsGlobal.getApiUrl() + ConstantsGlobal.API_LOCATION_PHONE_NUMBER;
   }
+
+  public static API_REFERRALCANDY_INTEGRATION = "portal/integration/referral-candy/";
+  public static getApiUrlReferralCandy() {
+    return ConstantsGlobal.getApiUrl() + ConstantsGlobal.API_REFERRALCANDY_INTEGRATION;
+  }
+
   public static API_LOCATION_ACCOUNT = "account";
   public static getApiUrlAccount() {
     return ConstantsGlobal.getApiUrl() + ConstantsGlobal.API_LOCATION_ACCOUNT;

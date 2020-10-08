@@ -139,6 +139,8 @@ app.controller('PortalSettingCtrl', function($location, $browser, $compile, $roo
     $scope.showcampaigns = true;
   } else if ($location.hash() == 'categories') {
     $scope.showcategories = true;
+  } else if ($location.hash() == 'coupons') {
+    $scope.showcoupons = true;
   } else if ($location.hash() == 'users') {
     $scope.showusers = true;
   } else if ($location.hash() == "web-settings") {
@@ -181,6 +183,8 @@ app.controller('PortalSettingCtrl', function($location, $browser, $compile, $roo
       $scope.showcategories = true;
     } else if (tabName == 'campaigns') {
       $scope.showcampaigns = true;
+    } else if (tabName == 'coupons') {
+      $scope.showcoupons = true;
     } else if (tabName == 'portal-settings') {
       $scope.showportals = true;
     } else if (tabName == 'pages') {

@@ -52,6 +52,17 @@ export class CampaignService {
       .map(res => res.json());
   }
 
+  /**
+   * Get campaign data through the API
+   * @return {Observable} An observable that function can subscribe to
+   */
+  getCouponData(campaignId: number, couponCode: string, pledgeLevelId: number, authToken?: string) {
+    let campaignUrl = ConstantsGlobal.getApiUrlCampaign() + campaignId +"/coupon?code="+couponCode+"&pledge_level_id="+pledgeLevelId;
+
+    return this.http.get(campaignUrl, this.getAuthOptions(authToken))
+      .map(res => res.json());
+  }
+
   getCampaignAllData(campaignFilters?: Object) {
     let campaignUrl = ConstantsGlobal.getApiUrlCampaign();
     let urlParam = new URLSearchParams();

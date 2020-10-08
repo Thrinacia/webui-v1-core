@@ -222,6 +222,7 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
     $scope.tippingOptions = portal_settings.site_tipping;
     $scope.displayCampaignDisclaimer = success.public_setting.site_campaign_campaign_toggle_disclaimer_text;
     $scope.forceAnonymousPledge = portal_settings.site_campaign_always_anonymous_contribution;
+    $scope.combineTip = portal_settings.site_campaign_combine_amount_tip;
 
     if (typeof $scope.tippingOptions === 'undefined' || $scope.tippingOptions == null) {
       $scope.tippingOptions = { toggle: false };
@@ -2032,6 +2033,10 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
         }
       }
 
+      if ($scope.couponCodeValid && $scope.currentCoupon) {
+        pledgeInfo['coupon_code'] = $scope.currentCoupon.code;
+      }
+
       //if website tipping is enabled
       if ($scope.tippingOptions.toggle) {
         if ($scope.tip.dollar_amount && $scope.tip.dollar_amount != 0) {
@@ -2156,6 +2161,11 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
           }
           if ($scope.public_settings.site_campaign_facebook_analytics && $scope.public_settings.site_campaign_facebook_analytics.toggle) {
             sendFBTransaction(success, $scope.public_settings.site_campaign_facebook_analytics.code);
+          }
+          if ($scope.public_settings.site_campaign_referralcandy_analytics && $scope.public_settings.site_campaign_referralcandy_analytics.toggle) {
+            sendRCTransaction(
+              success, 
+              $scope.public_settings.site_campaign_referralcandy_analytics.id);
           }
         }, function(failed) { // Maximum funds allowed
           errorHandling(failed);
@@ -2350,8 +2360,10 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
         value.dollar_amount = value.value;
       }
 
-      if (value.dollar_amount < $scope.lowestAmount) {
-        value.dollar_amount += $scope.lowestAmount;
+      if(!$scope.combineTip){
+        if (value.dollar_amount < $scope.lowestAmount) {
+          value.dollar_amount += $scope.lowestAmount;
+        }
       }
     });
   }
@@ -2409,6 +2421,49 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
     "</script><noscript><img height='1' width='1' style='display:none'src='https://www.facebook.com/tr?id="+fbId+"&ev=PageView&noscript=1'/></noscript><!-- End Facebook Pixel Code -->";
 
     $scope.fbScript = $sce.trustAsHtml(script);
+  }
+
+  function sendRCTransaction(success, appId) {
+
+    var rcData = {
+      appId: appId,
+      unixTimestamp: Math.floor(Date.now() / 1000),
+      invoiceNumber: success.entry_backer_id,
+      firstName: $scope.user.first_name,
+      lastName: $scope.user.last_name,
+      email: $scope.user.email,
+      amount: $scope.pledgeAmount,
+      currencyCode: $scope.campaign.currencies[0].code_iso4217_alpha
+    };
+
+    Restangular.one('portal').customGET('integration/referral-candy', {
+      "email": rcData.email,
+      "first_name": rcData.firstName,
+      "invoice_amount": rcData.amount,
+      "timestamp": rcData.unixTimestamp
+    }).then(function(success) {
+
+      rcData.hash = success.signature;
+
+      console.log(success);
+      console.log(rcData);
+
+      var popsicle = 
+          '<div id="refcandy-popsicle" data-app-id="'+appId+'" data-fname="'+rcData.firstName+'" data-lname="'+rcData.lastName+'" data-email="'+rcData.email+'" data-amount="'+rcData.amount+'" data-currency="'+rcData.currencyCode+'" data-timestamp="'+rcData.unixTimestamp+'" data-external-reference-id="'+rcData.invoiceNumber+'" data-signature="'+rcData.hash+'"></div>'+
+          '<script>(function(e){var t,n,r,i,s,o,u,a,f,l,c,h,p,d,v;z="script";l="refcandy-purchase-js";c="refcandy-popsicle";p="go.referralcandy.com/purchase/";t="data-app-id";r={email:"a",fname:"b",lname:"c",amount:"d",currency:"e","accepts-marketing":"f",timestamp:"g","referral-code":"h",locale:"i","external-reference-id":"k",signature:"ab"};i=e.getElementsByTagName(z)[0];s=function(e,t){if(t){return""+e+"="+encodeURIComponent(t)}else{return""}};d=function(e){return""+p+h.getAttribute(t)+".js?lightbox=1&aa=75&"};if(!e.getElementById(l)){h=e.getElementById(c);if(h){o=e.createElement(z);o.id=l;a=function(){var e;e=[];for(n in r){u=r[n];v=h.getAttribute("data-"+n);e.push(s(u,v))}return e}();o.src="//"+d(h.getAttribute(t))+a.join("&");return i.parentNode.insertBefore(o,i)}}})(document);</script>';
+      var mint = 
+          '<div id="refcandy-mint" data-app-id="'+appId+'" data-fname="'+rcData.firstName+'" data-lname="'+rcData.lastName+'" data-email="'+rcData.email+'" data-amount="'+rcData.amount+'" data-currency="'+rcData.currencyCode+'" data-timestamp="'+rcData.unixTimestamp+'" data-external-reference-id="'+rcData.invoiceNumber+'" data-signature="'+rcData.hash+'"></div>'+
+          '<script>(function(e){var t,n,r,i,s,o,u,a,f,l,c,h,p,d,v;z="script";l="refcandy-purchase-js";c="refcandy-mint";p="go.referralcandy.com/purchase/";t="data-app-id";r={email:"a",fname:"b",lname:"c",amount:"d",currency:"e","accepts-marketing":"f",timestamp:"g","referral-code":"h",locale:"i","external-reference-id":"k",signature:"ab"};i=e.getElementsByTagName(z)[0];s=function(e,t){if(t){return""+e+"="+encodeURIComponent(t)}else{return""}};d=function(e){return""+p+h.getAttribute(t)+".js?aa=75&"};if(!e.getElementById(l)){h=e.getElementById(c);if(h){o=e.createElement(z);o.id=l;a=function(){var e;e=[];for(n in r){u=r[n];v=h.getAttribute("data-"+n);e.push(s(u,v))}return e}();o.src="//"+d(h.getAttribute(t))+a.join("&");return i.parentNode.insertBefore(o,i)}}})(document);</script>';
+
+      if($scope.public_settings.site_campaign_referralcandy_analytics.enable_popup){
+        $scope.rcScript = $sce.trustAsHtml(popsicle);
+      }
+      else{
+        $scope.rcScript = $sce.trustAsHtml(mint);
+      }
+  
+    });
+
   }
 
   function setNativeName(placeValue) {
@@ -2830,12 +2885,26 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
   }
 
   // total cost of shipping
-  $scope.total = function(shipping, tip) {
-    if (shipping) {
-      $scope.totalAmount = parseFloat($scope.pledgeAmount) + parseFloat(shipping);
-    } else {
-      $scope.totalAmount = $scope.pledgeAmount;
+  $scope.total = function(shipping, tip, coupon) {
+
+    $scope.totalAmount = parseFloat($scope.pledgeAmount);
+
+    if (coupon) {
+      if (coupon.discount_percentage > 0) {
+        var discount = ($scope.pledgeAmount * (coupon.discount_percentage / 100.0));
+        $scope.amountDiscounted = discount;
+        $scope.totalAmount = Math.max(0, $scope.pledgeAmount - discount);
+      }
+      if (coupon.discount_amount > 0) {
+        $scope.amountDiscounted = coupon.discount_amount > $scope.pledgeAmount ? $scope.pledgeAmount : coupon.discount_amount;
+        $scope.totalAmount = Math.max(0, $scope.pledgeAmount - coupon.discount_amount);
+      }
     }
+
+    if (shipping) {
+      $scope.totalAmount += parseFloat(shipping);
+    }
+
     // Calculate tip with current total amount & display this as total ONLY on the template to avoid backend issues
     if (tip) {
       $scope.totalAmountPlusTip = parseFloat($scope.totalAmount) + parseFloat(tip);
@@ -2846,19 +2915,56 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
     return total;
   }
 
-  $scope.replacedTotal = function(amount, shipping, tip) {
-    var total = 0;
-    if (shipping) {
-      amount = parseFloat(amount) + parseFloat(shipping);
-    } else {
-      amount = amount;
+  //COUPON Entered by Customer
+  $scope.couponCode = '';
+  $scope.couponCodeValid = true;
+
+  $scope.applyCoupon = function(couponCode) {
+    $scope.couponAppliedMessage = $translate.instant("pledge_campaign_searching_coupon");
+    Restangular.one('campaign', $scope.campaign_id).one('coupon?code='+couponCode+'&pledge_level_id='+$scope.pledgeLevel).customGET().then(
+      function(success) {
+        $scope.currentCoupon = success;
+        $scope.couponCodeValid = true;
+        if (success.discount_percentage > 0) $scope.couponAppliedMessage = success.discount_percentage+"%";
+        if (success.discount_amount > 0) 
+          $scope.couponAppliedMessage = $filter('formatCurrency')(success.discount_amount, $scope.campaign.currencies[0].code_iso4217_alpha, $scope.public_setting.site_campaign_decimal_option);
+        $scope.couponAppliedMessage += " "+$translate.instant('pledge_campaign_discount_applied');
+      },
+      function(failure) {
+        $scope.couponCodeValid = false;
+        $scope.currentCoupon = undefined;
+        $scope.couponCode = "";
+        $scope.couponAppliedMessage = $translate.instant('pledge_campaign_coupon_invalid');
+      }
+    );
+  }
+
+  $scope.replacedTotal = function(amount, shipping, tip, coupon) {
+    $scope.totalAmount = parseFloat($scope.pledgeAmount);
+
+    if (coupon) {
+      if (coupon.discount_percentage > 0) {
+        var discount = ($scope.pledgeAmount * (coupon.discount_percentage / 100.0));
+        $scope.amountDiscounted = discount;
+        $scope.totalAmount = Math.max(0, $scope.pledgeAmount - discount);
+      }
+      if (coupon.discount_amount > 0) {
+        $scope.amountDiscounted = coupon.discount_amount > $scope.pledgeAmount ? $scope.pledgeAmount : coupon.discount_amount;
+        $scope.totalAmount = Math.max(0, $scope.pledgeAmount - coupon.discount_amount);
+      }
     }
+
+    if (shipping) {
+      $scope.totalAmount += parseFloat(shipping);
+    }
+
     // Calculate tip with current total amount & display this as total ONLY on the template to avoid backend issues
     if (tip) {
-      $scope.totalAmountPlusTip = parseFloat(amount) + parseFloat(tip);
+      $scope.totalAmountPlusTip = parseFloat($scope.totalAmount) + parseFloat(tip);
       return $scope.totalAmountPlusTip;
     }
-    total = parseFloat(amount);
+
+    var total = parseFloat($scope.totalAmount);
     return total;
   }
 

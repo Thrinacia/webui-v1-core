@@ -213,6 +213,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
         if (val.attributes) {
           tempAttributes = val.attributes;
         }
+
         var rewardsModel = {
           amount: val.amount,
           name: val.name,
@@ -225,10 +226,30 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
           pledge_level_id: val.pledge_level_id,
           attributes: tempAttributes,
           expires: val.expires,
-          priority: val.priority
+          priority: val.priority,
+          coupon_id: val.coupon_id
         };
+        
         var cID = [];
         $scope.rewards_data.push(rewardsModel);
+
+        //fetch pledge data for each reward and add into rewards_data
+        Restangular.one('campaign', campaign_id).one('pledge-level').customGET().then(
+          function(success) {
+            angular.forEach(success, function(value) {
+              if (value.estimated_delivery_time) {
+                //convert date
+                value.estimated_delivery_time_convert = convertDate(value.estimated_delivery_time);
+              }
+              if (value.shipping === null) {
+                value.shipping = [];
+              }
+              var index = $scope.rewards_data.findIndex(function (r) { return r.pledge_level_id == value.pledge_level_id; });
+              $scope.rewards_data[index].selectedCoupons = value.coupon;
+            });
+          });
+  
+
         if (val.shipping) {
           if (val.shipping.length > 0) {
             val.shipping = checkNative(val.shipping);
@@ -556,6 +577,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
           $scope.campaign.settings.campaign_fee_percentage = $scope.public_settings.site_campaign_defaults.percentage_fee;
         }
       }
+
 
       $scope.progressHide = false;
       if ($scope.public_settings.site_campaign_progress_bar_hide) {
@@ -1748,7 +1770,8 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
   }
 
   $scope.rewardsValidation = function() {
-    var translation = $translate.instant(['campaign_reward_reward_contribution_description_error', 'campaign_reward_reward_contribution_name_error', 'campaign_reward_reward_contribution_message_error', 'campaign_reward_reward_contribution_message_error2']);
+    var translation = $translate.instant(['campaign_reward_reward_contribution_description_error', 'campaign_reward_reward_contribution_name_error', 
+    'campaign_reward_reward_contribution_message_error', 'campaign_reward_reward_contribution_message_error2']);
 
     $scope.rewards_validation = {
       reward_amount: {
@@ -1937,7 +1960,9 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
           id: val.pledge_level_id,
           attributes: val.attributes,
           expires: val.expires,
-          priority: val.priority
+          priority: val.priority,
+          coupon_id: val.selectedCoupons && val.selectedCoupons.length > 0 ? val.selectedCoupons[0].coupon_id : "__NULL__",
+          selectedCoupons: val.selectedCoupons //temporary value
         };
         $scope.campaign.rewards.push(rewardsModel);
         if (val.shipping.length > 0) {
@@ -2786,6 +2811,26 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
     }
   }
 
+  // Search coupons available to the campaign manager
+  $scope.coupons = [];
+  $scope.selectedCoupons = {selected: []};
+  $scope.searchCoupons = function(term, reward) {
+    if (!reward.selectedCoupons) reward.selectedCoupons = [];
+    if (reward.selectedCoupons.length >= 1) {
+      $scope.coupons = [];
+      return;
+    }
+    var filters = {
+      "sort": '-created',
+      "filters": {code: term}
+    };
+    if (term) {
+      RestFullResponse.one('portal').all('coupon').getList(filters).then(function (success) {
+        $scope.coupons = success.data;
+      });
+    }
+  }
+
   $scope.$watch('multipleCity.selected', function(value) {
     if (value) {
       $scope.campaign.city_id = [];
@@ -2901,7 +2946,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
         description: '<p><br></p>',
         shipping_option_id: '',
         shipping: [],
-        attributes: {}
+        attributes: {},
       };
     }
     if (arr) {

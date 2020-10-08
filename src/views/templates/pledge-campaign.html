@@ -252,7 +252,6 @@
                 </div>
 
                 <div class="ui two column stackable grid pledge-amount">
-
                   <div class="eight wide column your-pledge">
                     <h4 class="title" translate>pledge_campaign_yourcontribution</h4>
                     <form class="ui form contribution-form">
@@ -294,6 +293,29 @@
                     <div class="amount" ng-if="pledgeAmount-selectedReward.amount <= 0" ng-bind-html="0 | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></div>
                   </div>
                 </div>
+
+                <!-- CUSTOMER ENTER COUPON FORM -->
+                <div class="ui two column stackable grid pledge-amount" ng-show = "pledgeLevel && public_settings.site_campaign_coupon_management.toggle">
+                  <div class="ten wide column your-pledge">
+                    <h4 class="title" translate>pledge_campaign_enter_coupon</h4>
+                    <form ng-submit = "applyCode(couponCode)" class="ui large form contribution-form">
+                      <div class = "two fields">
+                        <div class="contribution-input">
+                          <div class="ui green button" ng-click="applyCoupon(couponCode)" translate>
+                            pledge_campaign_apply
+                          </div>
+                          <div class="input-wrap">
+                            <input name="coupon_code_input" type="text"
+                              min="{{selectedReward.amount || public_settings.site_theme_campaign_min_contribute_amount}}" ng-model="couponCode" ng-attr-allow-decimal="true">
+                          </div>
+                        </div>
+                      </div>
+                    </form>
+                    <h5 ng-show="couponAppliedMessage" class="title"><em>{{couponAppliedMessage}}</em></h5>
+                  </div>
+                </div>
+                <!--END CUSTOMER COUPON ENTER FORM-->
+
                 <div class="ui form" id="reward-variation-form" ng-if="enableRewardVariation">
                   <div id="reward-variation" class="reward-variation ui two column stackable grid">
                     <div class="reward-variation-item eight wide column" ng-repeat="variation in selectedReward.attributes.variation">
@@ -1381,6 +1403,13 @@
                       <span class="currency" ng-bind-html="campaign.currencies[0].code_iso4217_alpha"></span>
                     </td>
                   </tr>
+                  <tr ng-if="couponCodeValid && currentCoupon">
+                    <td class="payment-label" translate> pledge_campaign_your_discount </td>
+                    <td class="payment-amnt">
+                      <span ng-if="amountDiscounted > 0" ng-bind-html="'-' + (amountDiscounted | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option)"></span>
+                      <span ng-if="amountDiscounted > 0" class="currency" ng-bind-html="campaign.currencies[0].code_iso4217_alpha"></span>
+                    </td>
+                  </tr>
                   <tr ng-if="tip.dollar_amount">
                     <td translate> pledge_campaign_your_tip </td>
                     <td>
@@ -1408,8 +1437,8 @@
                   <tr>
                     <td translate> pledge_campaign_total_payment </td>
                     <td>
-                      <span ng-if="!pledgeReplace" ng-bind-html="total(shipOptions[0].cost, tip.dollar_amount) | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></span>
-                      <span ng-if="pledgeReplace" ng-bind-html="replacedTotal(totalReplacedCost, totalPledgeReplacementShippingCost, tip.dollar_amount) | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></span>
+                      <span ng-if="!pledgeReplace" ng-bind-html="total(shipOptions[0].cost, tip.dollar_amount, currentCoupon) | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></span>
+                      <span ng-if="pledgeReplace" ng-bind-html="replacedTotal(totalReplacedCost, totalPledgeReplacementShippingCost, tip.dollar_amount, currentCoupon) | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></span>
                       <span class="currency" ng-bind-html="campaign.currencies[0].code_iso4217_alpha"></span>
                     </td>
                   </tr>
@@ -2447,6 +2476,7 @@
 <div class="ui pledge-thank-you modal">
   <div ng-bind-html="gaScript"></div>
   <div ng-bind-html="fbScript"></div>
+  <div ng-bind-html="rcScript"></div>
   <h1 class="ui icon inverted header" id="pledge-success">
     {{'pledge_campaign_thankyou'| translate}}
   </h1>

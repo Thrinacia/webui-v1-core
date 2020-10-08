@@ -374,7 +374,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
     $scope.pdata = {
       entry_id: $scope.campaignSelected.entry_id,
       pledge_level_id: '',
-      amount: $scope.user.amount,
+      amount: $scope.user.amount.toFixed(2),
       person_id: '',
       anonymous_contribution: '',
       anonymous_contribution_partial: '',
@@ -407,7 +407,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         if ($scope.tip.type == 'Dollar') {
           $scope.pdata.amount_tip = parseFloat($scope.tip.value).toFixed(2);
         } else {
-          $scope.pdata.amount_tip = (parseFloat($scope.tip.value) / 100).toFixed(2) * $scope.user.amount;
+          $scope.pdata.amount_tip = ((parseFloat($scope.tip.value) / 100) * $scope.user.amount).toFixed(2);
         }
       }
     }
@@ -503,7 +503,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
     $scope.pdata = {
       entry_id: $scope.campaignSelected.entry_id,
       pledge_level_id: '',
-      amount: $scope.user.amount,
+      amount: $scope.user.amount.toFixed(2),
       created:  $scope.user.created,
       person_id: '',
       anonymous_contribution: '',
@@ -537,7 +537,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         if ($scope.tip.type == 'Dollar') {
           $scope.pdata.amount_tip = parseFloat($scope.tip.value).toFixed(2);
         } else {
-          $scope.pdata.amount_tip = (parseFloat($scope.tip.value) / 100).toFixed(2) * $scope.user.amount;
+          $scope.pdata.amount_tip = ((parseFloat($scope.tip.value) / 100) * $scope.user.amount).toFixed(2);
         }
       }
     }
@@ -1944,6 +1944,12 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
   }
 
   $scope.progressStatusEnabled = function () {
+    if($scope.portal_settings.site_campaign_state_hide == undefined) {
+      return false;
+    }
+    if($scope.portal_settings.site_campaign_state_settings == undefined) {
+      return false;
+    }
     return $scope.portal_settings.site_campaign_state_hide && $scope.portal_settings.site_campaign_state_settings.length >= 1;
   }
   $scope.changeMultipleCampaignsStatus = function () {
@@ -2086,6 +2092,113 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
   $scope.editCampaign = function ($event, campaign) {
     $scope.campaign = campaign;
     window.open('getstarted/' + campaign.entry_id);
+  }
+
+  $scope.campaignManagerHasEndDate = function(campaign) {
+    if(campaign.ends_date_time == undefined) {
+      return false;
+    }
+    return true;
+  }
+  $scope.openExtendCampaignModal = function(campaign) {
+    if (campaign) {
+      $scope.extendingCampaign = campaign;
+      $scope.setEndDate = campaign.ends_date_time;
+      $('.extend-campaign-modal').modal('show');
+    }
+  }
+  $scope.extendCampaignEndDate = function() {
+    // Increment current end date
+    $scope.extendDate =  new Date($scope.extendingCampaign.ends_date_time);
+    $scope.extendDate.setTime($scope.extendDate.getTime() + $scope.extendEndDays * 86400000);
+
+    var month = $scope.extendDate.getMonth();
+    if (month >= 9) {
+      month = $scope.extendDate.getMonth() + 1;
+    } else {
+      month = $scope.extendDate.getMonth() + 1;
+      month = "0" + month;
+    }
+    var day = $scope.extendDate.getDate();
+    if (day > 9) {} else {
+
+      day = "0" + day;
+    }
+    var hours = $scope.extendDate.getHours();
+    if (hours > 9) {} else {
+      hours = "0" + hours;
+    }
+    var mins = $scope.extendDate.getMinutes();
+    if (mins > 9) {} else {
+      mins = "0" + mins;
+    }
+    var datestring = $scope.extendDate.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+    $scope.extendingCampaign.ends = datestring;
+    $scope.extendingCampaign.ends = $scope.extendingCampaign.ends.replace(/\//g, "-");
+
+    // Approve campaign
+    $scope.extendingCampaign.entry_status_id = 2;
+
+    Restangular.one('campaign', $scope.extendingCampaign.id).customPUT($scope.extendingCampaign).then(function(success) {
+      // Update current campaign list
+      angular.forEach($scope.campaigns, function(campaign, key) {
+        if(campaign.id == $scope.extendingCampaign.id) {
+          $scope.campaigns[key] = success;
+        }
+      });
+      msg = {
+        'header': 'tab_campaign_extend_campaign_date_success',
+      }
+      $rootScope.floatingMessage = msg;
+      $scope.hideFloatingMessage();
+      $('.extend-campaign-modal').modal('hide');
+    });
+  }
+  $scope.setCampaignEndDate = function() {
+    if (typeof $scope.setEndDate == "string") {
+      $scope.setEndDate = new Date($scope.setEndDate);
+    }
+    var month = $scope.setEndDate.getMonth();
+    if (month >= 9) {
+      month = $scope.setEndDate.getMonth() + 1;
+    } else {
+      month = $scope.setEndDate.getMonth() + 1;
+      month = "0" + month;
+    }
+    var day = $scope.setEndDate.getDate();
+    if (day > 9) {} else {
+
+      day = "0" + day;
+    }
+    var hours = $scope.setEndDate.getHours();
+    if (hours > 9) {} else {
+      hours = "0" + hours;
+    }
+    var mins = $scope.setEndDate.getMinutes();
+    if (mins > 9) {} else {
+      mins = "0" + mins;
+    }
+    var datestring = $scope.setEndDate.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+    $scope.extendingCampaign.ends = datestring;
+    $scope.extendingCampaign.ends = $scope.extendingCampaign.ends.replace(/\//g, "-");
+
+    // Approve campaign
+    $scope.extendingCampaign.entry_status_id = 2;
+
+    Restangular.one('campaign', $scope.extendingCampaign.id).customPUT($scope.extendingCampaign).then(function(success) {
+      // Update current campaign list
+      angular.forEach($scope.campaigns, function(campaign, key) {
+        if(campaign.id == $scope.extendingCampaign.id) {
+          $scope.campaigns[key] = success;
+        }
+      });
+      msg = {
+        'header': 'tab_campaign_extend_campaign_date_success',
+      }
+      $rootScope.floatingMessage = msg;
+      $scope.hideFloatingMessage();
+      $('.extend-campaign-modal').modal('hide');
+    });
   }
 
   // Look up city based on search term, then find the cityID and store it

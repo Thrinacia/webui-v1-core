@@ -105,6 +105,33 @@
                     </div>
                   </div>
 
+                  <!--COUPON ASSIGNMENT FIELD-->
+                  <div class="field" ng-show = "public_settings.site_campaign_coupon_management.toggle">
+                    <label class="field-header">
+                      <span translate>campaign_reward_reward_coupon_title</span>
+                      <span class="optional-text" translate="campaign_creation_optional_text"></span>
+                    </label>
+                    <label class="note" translate>campaign_reward_reward_coupon_note</label>
+
+                    <div class="eleven wide column">
+                      <div class="ui fluid form">
+                        <div class="field">
+                          <div ui-select multiple style="width:100%;" ng-model="reward.selectedCoupons" theme="select2" reset-search-input="true" onkeydown="if (event.keyCode == 13) return false;" ng-disabled="enableCampaignRevisions && campaign.entry_status_id == 2  && user.person_type_id !== 1">
+                            <div ui-select-match ng-attr-placeholder=" {{'campaign_reward_reward_coupon_placeholder' | translate}}" id="location">
+                              <span ng-show="$item.discount_amount > 0" ng-bind="$item.code + ' ($' +$item.discount_amount+' off)'"></span>
+                              <span ng-show="$item.discount_percentage > 0" ng-bind="$item.code + ' (' +$item.discount_percentage+'% off)'"></span>
+                            </div>
+                            <div ui-select-choices repeat="coupon in coupons | filter: $select.search" refresh="searchCoupons($select.search, reward)" refresh-delay="200">
+                              <div ng-show="coupon.discount_amount > 0" ng-bind-html="coupon.code+' ('+coupon.name+', $'+coupon.discount_amount+' off)'"></div>
+                              <div ng-show="coupon.discount_percentage > 0" ng-bind-html="coupon.code+' ('+coupon.name+', '+coupon.discount_percentage+'% off)'"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
                   <div class="field shipping-field">
                     <label class="field-header">
                       <span translate>campaign_reward_reward_item_limit</span>

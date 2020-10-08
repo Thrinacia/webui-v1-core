@@ -64,11 +64,13 @@
 </div>
 -->
 
+<!-- ORIGINAL STRIPE GRID -->
 <div class="ui page grid">
 	<div class="column">
 		<div ng-include src="'views/templates/partials/no-data-available.html'" ng-show="stripeAccounts.length==0"></div>
 		<div ng-if="stripeAccounts.length" >
-			<div class="ui four column stackable grid contribution card-row ng-scope stripe-connect-row" ng-repeat="account in stripeAccounts">
+			<div class="ui eight column stackable grid contribution card-row ng-scope stripe-connect-row" ng-repeat="account in stripeAccounts">
+				<!--status and check box-->
 				<div class="two wide left-col column address-id">
 					<div class="contribution-header" translate> tab_stripeconnect_status </div>
 					<div class="data">
@@ -76,34 +78,49 @@
 							<input type="checkbox">
 							<label></label>
 						</div> 
-						<a class="ui yellow label" ng-show="account.access_token.indexOf('test') > -1">Test Account</a>
-						<a class="ui grey label" ng-show="account.access_token.indexOf('live') > -1">Live Account</a>
+						<a class="ui yellow label" ng-show="account.access_token.indexOf('test') > -1" translate>tab_stripeconnect_test_account</a>
+						<a class="ui green label" ng-show="account.access_token.indexOf('live') > -1" translate>tab_stripeconnect_live_account</a>
 					</div>
 				</div>
+				<!--label editor-->
+				<div class="four wide left-col column address-id" style="overflow: hidden;">
+					<div class="contribution-header" translate> tab_stripeconnect_label </div>
+					<div class="data">
+						<div class="ui input">
+						<input type="text" ng-model="account.name" placeholder="{{ 'tab_stripeconnect_account_name' | translate }}" value="account.name"></input>
+						<button style="margin-left:10px" class="ui button small" ng-show="account.name" ng-click="updateLabel(account.id, account.name)" translate>tab_stripeconnect_update_label</button>
+						</div>
+					</div>
+				</div>
+				<!--stripe account id-->
 				<div class="one wide left-col column address-id">
 					<div class="contribution-header" translate> tab_stripeconnect_id </div>
 					<div class="data">
 						{{account.stripe_account_id}}
 					</div>
 				</div>
+				<!--stripe account email-->
 				<div class="three wide left-col column address-id">
 					<div class="contribution-header" translate> tab_stripeconnect_stripe_email </div>
 					<div class="data">
 						{{account.email}}
 					</div>
 				</div>
-				<div class="six wide left-col column address-id" style="overflow: hidden;">
+				<!--stripe account key-->
+				<div class="two wide left-col column address-id" style="overflow: hidden;">
 					<div class="contribution-header" translate> tab_stripeconnect_stripe_key </div>
-					<div class="data">
-						{{account.publishable_key}}
+					<div class="data" title = "{{account.publishable_key}}" ng-show = "account.publishable_key">
+						{{account.publishable_key.substring(0, 16)+"..."}}
 					</div>
 				</div>
+				<!--stripe account country-->
 				<div class="two wide left-col column address-id">
 					<div class="contribution-header" translate> tab_stripeconnect_country </div>
 					<div class="data">
 						{{account.country_name}}
 					</div>
 				</div>
+				<!--stripe account payout button-->
 				<div class="two wide left-col column address-id" >
 					<div class="contribution-header" translate> tab_stripeconnect_payout </div>
 					<div class="data">

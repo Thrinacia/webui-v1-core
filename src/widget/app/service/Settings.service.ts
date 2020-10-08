@@ -40,4 +40,14 @@ export class SettingsService {
      .map(res => res.json());
   }
 
+  getReferralCandyHash(email, fname, invoice_amount, timestamp) {
+    let url = ConstantsGlobal.getApiUrlReferralCandy() + 
+      "?email="+email+
+      "&first_name="+fname+
+      "&invoice_amount="+invoice_amount+
+      "&timestamp="+timestamp;
+    return this.http.get(url)
+     .map(res => res.json());
+  }
+
 }

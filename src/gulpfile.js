@@ -60,6 +60,7 @@ gulp.task("connectDev", function() {
     root: ".",
     livereload: true,
     port: devPort,
+    host: '0.0.0.0',
     fallback: "index.html"
   });
 });

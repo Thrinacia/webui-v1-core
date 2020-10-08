@@ -202,5 +202,14 @@
   "tab_campaign_manual_transaction_organization_name_account_type_field_label": "Organization Name",
   "tab_campaign_manual_transaction_organization_email_account_type_field_label": "Organization Email",
   "tab_campaign_manual_transaction_organization_name_account_type_field_placeholder": "Organization Name",
-  "tab_campaign_manual_transaction_organization_email_account_type_field_placeholder": "Organization Email"
+  "tab_campaign_manual_transaction_organization_email_account_type_field_placeholder": "Organization Email",
+  "tab_campaign_extend_campaign_title":"Extend Campaign",
+  "tab_campaign_extend_campaign_date_extend_message":"Extend campaign end date by",
+  "tab_campaign_extend_campaign_date_or_message":"- or -",
+  "tab_campaign_extend_campaign_date_set_message":"Set campaign end date to",
+  "tab_campaign_extend_campaign_end_days_placeholder":"Extend days",
+  "tab_campaign_extend_campaign_end_date_placeholder":"End date",
+  "tab_campaign_extend_campaign_date_button":"Extend Campaign",
+  "tab_campaign_extend_campaign_date_submit":"Extend",
+  "tab_campaign_extend_campaign_date_success":"Campaign end date updated."
 }

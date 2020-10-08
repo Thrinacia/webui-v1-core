@@ -1,4 +1,4 @@
-app.controller('CampaignManagementCtrl', function($location, $scope, $rootScope, RESOURCE_REGIONS, CampaignSettingsService, $translatePartialLoader, $translate, Restangular, $timeout, RestFullResponse, CreateCampaignService, $routeParams, UserService, RequestCacheService) {
+app.controller('CampaignManagementCtrl', function($location, $scope, $rootScope, RESOURCE_REGIONS, CampaignSettingsService, $translatePartialLoader, $translate, Restangular, $timeout, RestFullResponse, CreateCampaignService, $routeParams, UserService, RequestCacheService, ngQuickDateDefaults) {
   $scope.RESOURCE_REGIONS = RESOURCE_REGIONS;
   $scope.user = UserService;
   window.a = $scope;
@@ -101,6 +101,123 @@ app.controller('CampaignManagementCtrl', function($location, $scope, $rootScope,
   //================================
   //      CAMPAIGN MANAGEMENT
   //================================
+  $scope.campaignManagerHasEndDate = function(campaign) {
+    if(campaign.ends_date_time == undefined) {
+      return false;
+    }
+    return true;
+  }
+  $scope.openExtendCampaignModal = function(campaign) {
+    if (campaign) {
+      $scope.extendingCampaign = campaign;
+      $scope.setEndDate = campaign.ends_date_time;
+      $('.extend-campaign-modal').modal('show');
+    }
+  }
+  $scope.extendCampaignEndDate = function() {
+    // Increment current end date
+    $scope.extendDate =  new Date($scope.extendingCampaign.ends_date_time);
+    $scope.extendDate.setTime($scope.extendDate.getTime() + $scope.extendEndDays * 86400000);
+
+    var month = $scope.extendDate.getMonth();
+    if (month >= 9) {
+      month = $scope.extendDate.getMonth() + 1;
+    } else {
+      month = $scope.extendDate.getMonth() + 1;
+      month = "0" + month;
+    }
+    var day = $scope.extendDate.getDate();
+    if (day > 9) {} else {
+
+      day = "0" + day;
+    }
+    var hours = $scope.extendDate.getHours();
+    if (hours > 9) {} else {
+      hours = "0" + hours;
+    }
+    var mins = $scope.extendDate.getMinutes();
+    if (mins > 9) {} else {
+      mins = "0" + mins;
+    }
+    var datestring = $scope.extendDate.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+    $scope.extendingCampaign.ends = datestring;
+    $scope.extendingCampaign.ends = $scope.extendingCampaign.ends.replace(/\//g, "-");
+
+    if($scope.user.portal_admin == 1) {
+      // Approve campaign
+      $scope.extendingCampaign.entry_status_id = 2;
+    }
+    if($scope.user.campaign_manager == 1) {
+      $scope.extendingCampaign.entry_status_id = 10;
+    }
+
+    Restangular.one('campaign', $scope.extendingCampaign.id).customPUT($scope.extendingCampaign).then(function(success) {
+      // Update current campaign list
+      angular.forEach($scope.campaigns, function(campaign, key) {
+        if(campaign.id == $scope.extendingCampaign.id) {
+          $scope.campaigns[key] = success;
+        }
+      });
+      msg = {
+        'header': 'campaign_management_extend_campaign_date_success',
+      }
+      $rootScope.floatingMessage = msg;
+      $scope.hideFloatingMessage();
+      $('.extend-campaign-modal').modal('hide');
+    });
+  }
+  $scope.setCampaignEndDate = function() {
+    if (typeof $scope.setEndDate == "string") {
+      $scope.setEndDate = new Date($scope.setEndDate);
+    }
+    var month = $scope.setEndDate.getMonth();
+    if (month >= 9) {
+      month = $scope.setEndDate.getMonth() + 1;
+    } else {
+      month = $scope.setEndDate.getMonth() + 1;
+      month = "0" + month;
+    }
+    var day = $scope.setEndDate.getDate();
+    if (day > 9) {} else {
+
+      day = "0" + day;
+    }
+    var hours = $scope.setEndDate.getHours();
+    if (hours > 9) {} else {
+      hours = "0" + hours;
+    }
+    var mins = $scope.setEndDate.getMinutes();
+    if (mins > 9) {} else {
+      mins = "0" + mins;
+    }
+    var datestring = $scope.setEndDate.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+    $scope.extendingCampaign.ends = datestring;
+    $scope.extendingCampaign.ends = $scope.extendingCampaign.ends.replace(/\//g, "-");
+
+    if($scope.user.portal_admin == 1) {
+      // Approve campaign
+      $scope.extendingCampaign.entry_status_id = 2;
+    }
+    if($scope.user.campaign_manager == 1) {
+      $scope.extendingCampaign.entry_status_id = 10;
+    }
+
+    Restangular.one('campaign', $scope.extendingCampaign.id).customPUT($scope.extendingCampaign).then(function(success) {
+      // Update current campaign list
+      angular.forEach($scope.campaigns, function(campaign, key) {
+        if(campaign.id == $scope.extendingCampaign.id) {
+          $scope.campaigns[key] = success;
+        }
+      });
+      msg = {
+        'header': 'campaign_management_extend_campaign_date_success',
+      }
+      $rootScope.floatingMessage = msg;
+      $scope.hideFloatingMessage();
+      $('.extend-campaign-modal').modal('hide');
+    });
+  }
+
   $scope.campaignManagerTransactionHide = function(campaign) {
     if ($scope.public_settings.site_campaign_management.transaction_hide) {
       return ($scope.user.person_type_id == 1 && campaign.funded_amount) ? true : false;

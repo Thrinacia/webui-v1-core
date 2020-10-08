@@ -23,6 +23,19 @@ app.controller('PaymentSettingCtrl', function($translate, $window, $location, $t
     }
   };
 
+  $scope.updateLabel = function(id, label){
+    var data = {
+      name: label
+    }
+    Restangular.one('account/stripe/connect/'+id).customPUT(data).then(function(){
+      msg = {
+        header: $translate.instant('tab_stripe_account_label_update_success')
+      }
+      $rootScope.floatingMessage = msg;
+      $scope.hideFloatingMessage();
+    });
+  }
+
   // detect location hash
   var hashVal = $location.hash();
 

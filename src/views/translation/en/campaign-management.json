@@ -40,5 +40,14 @@
 	"campaign_management_Cancel_yes":"Yes",
 	"campaign_management_Continuous_mode":"No End Date",
 	"campaign_management_search_placeholder": "Search by Name",
-	"campaign_management_too_late_capture_message":"It is too late to proceed with the Capture (5 or more days have passed)."
+	"campaign_management_too_late_capture_message":"It is too late to proceed with the Capture (5 or more days have passed).",
+	"campaign_management_extend_campaign_title":"Extend Campaign",
+	"campaign_management_extend_campaign_date_extend_message":"Extend campaign end date by",
+	"campaign_management_extend_campaign_date_or_message":"- or -",
+	"campaign_management_extend_campaign_date_set_message":"Set campaign end date to",
+	"campaign_management_extend_campaign_end_days_placeholder":"Extend days",
+	"campaign_management_extend_campaign_end_date_placeholder":"End date",
+	"campaign_management_extend_campaign_date_button":"Extend Campaign",
+	"campaign_management_extend_campaign_date_submit":"Extend",
+	"campaign_management_extend_campaign_date_success":"Campaign end date updated."
 }

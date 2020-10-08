@@ -58,8 +58,10 @@
                     <i class="dropdown icon"></i>
                     <div class="menu">
                       <div class="item" data-value="{{account.stripe_account_id}}" ng-repeat="account in stripeAccounts" ng-click="selectStripeId(account.id)">
+                        <a class = "ui label" ng-show="account.name">{{account.name}}</a>
+                        <a class = "ui label" ng-show="!account.name" translate>complete_funding_untitled_stripe_account</a>
                         <a class="ui green label" ng-show="account.access_token.indexOf('live') > -1">Live Account</a>
-                        <a class="ui yellow label" ng-show="account.access_token.indexOf('test') > -1">Test Account</a> {{account.email}} ({{account.publishable_key}})
+                        <a class="ui yellow label" ng-show="account.access_token.indexOf('test') > -1 && account.publishable_key">Test Account</a> {{account.email}}
                       </div>
                     </div>
                   </div>

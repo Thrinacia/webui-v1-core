@@ -25,7 +25,8 @@
     "angular-translate-storage-cookie": "~2.6.1",
     "moment-timezone": "~0.4.1",
     "angular-froala": "~2.0.1",
-    "angular-ui-select": "^0.19.8"
+    "angular-ui-select": "^0.19.8",
+    "js-md5": "md5#^0.7.3"
   },
   "devDependencies": {
     "lodash": "~2.4.1",
