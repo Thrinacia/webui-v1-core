@@ -683,6 +683,10 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
           $scope.public_settings.site_theme_default_shipping_country.name = $scope.public_settings.site_theme_default_shipping_country.native_name;
         }
 
+        if (typeof $scope.public_settings.site_verification == "undefined") {
+          $scope.public_settings.site_verification = { toggle: false};
+        }
+
         if (typeof $scope.public_settings.site_theme_sticky_menu == "undefined") {
           $scope.public_settings.site_theme_sticky_menu = false;
         }
@@ -2839,6 +2843,7 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       site_enable_cookie_consent: $scope.public_settings.site_enable_cookie_consent,
       site_disable_unsupported_browsers: $scope.public_settings.site_disable_unsupported_browsers,
       site_tipping: $scope.public_settings.site_tipping,
+      site_verification: $scope.public_settings.site_verification,
       site_campaign_combine_amount_tip: $scope.public_settings.site_campaign_combine_amount_tip,
       site_tip_currency: $scope.public_settings.site_tip_currency
     };

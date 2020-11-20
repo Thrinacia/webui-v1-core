@@ -4,6 +4,16 @@
       a {
         color: $font-color;
       }
+      .dropdown{
+        a, i {
+          color: $font-color;
+        }
+      }
+      .child-menu-dropdown {
+        a.item{
+          color: $font-color !important;
+        }
+      }
     }
 
     #mobile-sidebar {

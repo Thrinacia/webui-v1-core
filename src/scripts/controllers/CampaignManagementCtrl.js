@@ -101,45 +101,101 @@ app.controller('CampaignManagementCtrl', function($location, $scope, $rootScope,
   //================================
   //      CAMPAIGN MANAGEMENT
   //================================
+  // Checks if the Date object is correct. Especially important when calculating something like end date where start date + xxxx
+  // may be so far away it becomes no longer a valid Date object
+  function isValidDate(d) {
+    if (Object.prototype.toString.call(d) !== "[object Date]") {
+      return false;
+    }
+    return !isNaN(d.getTime());
+  }
+
+  function convertDate(d) {
+    var value = d;
+    var date = new Date(value);
+    // if the date is not able to be converted
+    if (!isValidDate(date)) {
+      // get the year, month, day
+      var year = value.substring(0, 4);
+      var month = value.substring(5, 7);
+      var day = value.substring(8, 10);
+      // do a pure convertion
+      return new Date(year, month - 1, day);
+    }
+    return d;
+  }
+
+  function fix_date(s) {
+    if (typeof s == 'string') {
+      return Date.parse(s);
+    } else {
+      if (s)
+        return s.getTime();
+      return;
+    }
+  }
+
+  $scope.check = function() {
+    $scope.checkstatus = true;
+  }
+
   $scope.campaignManagerHasEndDate = function(campaign) {
     if(campaign.ends_date_time == undefined) {
       return false;
     }
     return true;
   }
+
+  $scope.duration_type = [{
+    id: '1',
+    type: 'duration_type_day'
+  }, {
+    id: '2',
+    type: 'duration_type_week'
+  }, {
+    id: '3',
+    type: 'duration_type_month'
+  }, {
+    id: '4',
+    type: 'duration_type_year'
+  }];
+
+  $scope.durationTypeSelected = function(typeID) {
+    $scope.extendingCampaign.duration_type_id = typeID;
+  };
+
   $scope.openExtendCampaignModal = function(campaign) {
     if (campaign) {
       $scope.extendingCampaign = campaign;
-      $scope.setEndDate = campaign.ends_date_time;
       $('.extend-campaign-modal').modal('show');
     }
   }
   $scope.extendCampaignEndDate = function() {
     // Increment current end date
-    $scope.extendDate =  new Date($scope.extendingCampaign.ends_date_time);
-    $scope.extendDate.setTime($scope.extendDate.getTime() + $scope.extendEndDays * 86400000);
+    $scope.extendingCampaign.ends_date_time =  new Date($scope.extendingCampaign.ends_date_time);
+    $scope.extendingCampaign.ends_date_time.setTime($scope.extendingCampaign.ends_date_time.getTime() + $scope.extendEndDays * 86400000);
 
-    var month = $scope.extendDate.getMonth();
+    var month = $scope.extendingCampaign.ends_date_time.getMonth();
     if (month >= 9) {
-      month = $scope.extendDate.getMonth() + 1;
+      month = $scope.extendingCampaign.ends_date_time.getMonth() + 1;
     } else {
-      month = $scope.extendDate.getMonth() + 1;
+      month = $scope.extendingCampaign.ends_date_time.getMonth() + 1;
       month = "0" + month;
     }
-    var day = $scope.extendDate.getDate();
+    var day = $scope.extendingCampaign.ends_date_time.getDate();
     if (day > 9) {} else {
 
       day = "0" + day;
     }
-    var hours = $scope.extendDate.getHours();
+    var hours = $scope.extendingCampaign.ends_date_time.getHours();
     if (hours > 9) {} else {
       hours = "0" + hours;
     }
-    var mins = $scope.extendDate.getMinutes();
+    var mins = $scope.extendingCampaign.ends_date_time.getMinutes();
     if (mins > 9) {} else {
       mins = "0" + mins;
     }
-    var datestring = $scope.extendDate.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+    var datestring = $scope.extendingCampaign.ends_date_time.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
     $scope.extendingCampaign.ends = datestring;
     $scope.extendingCampaign.ends = $scope.extendingCampaign.ends.replace(/\//g, "-");
 
@@ -167,30 +223,61 @@ app.controller('CampaignManagementCtrl', function($location, $scope, $rootScope,
     });
   }
   $scope.setCampaignEndDate = function() {
-    if (typeof $scope.setEndDate == "string") {
-      $scope.setEndDate = new Date($scope.setEndDate);
+    if (typeof $scope.extendingCampaign.starts_date_time == "string") {
+      $scope.extendingCampaign.starts_date_time = new Date($scope.extendingCampaign.starts_date_time);
     }
-    var month = $scope.setEndDate.getMonth();
+    if ($scope.extendingCampaign.starts_date_time && typeof $scope.extendingCampaign.starts_date_time === "object") {
+      if ($scope.extendingCampaign.starts_date_time.toString().length > 19) {
+        var month = $scope.extendingCampaign.starts_date_time.getMonth();
+        if (month >= 9) {
+          month = $scope.extendingCampaign.starts_date_time.getMonth() + 1;
+        } else {
+          month = $scope.extendingCampaign.starts_date_time.getMonth() + 1;
+          month = "0" + month;
+        }
+        var day = $scope.extendingCampaign.starts_date_time.getDate();
+        if (day > 9) {} else {
+
+          day = "0" + day;
+        }
+        var hours = $scope.extendingCampaign.starts_date_time.getHours();
+        if (hours > 9) {} else {
+          hours = "0" + hours;
+        }
+        var mins = $scope.extendingCampaign.starts_date_time.getMinutes();
+        if (mins > 9) {} else {
+          mins = "0" + mins;
+        }
+        var datestring = $scope.extendingCampaign.starts_date_time.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+        $scope.extendingCampaign.starts = datestring;
+      } else {
+        $scope.extendingCampaign.starts = $scope.extendingCampaign.starts_date_time.substring(0, 16) + ":00";
+      }
+    }
+    if (typeof $scope.extendingCampaign.ends_date_time == "string") {
+      $scope.extendingCampaign.ends_date_time = new Date($scope.extendingCampaign.ends_date_time);
+    }
+    var month = $scope.extendingCampaign.ends_date_time.getMonth();
     if (month >= 9) {
-      month = $scope.setEndDate.getMonth() + 1;
+      month = $scope.extendingCampaign.ends_date_time.getMonth() + 1;
     } else {
-      month = $scope.setEndDate.getMonth() + 1;
+      month = $scope.extendingCampaign.ends_date_time.getMonth() + 1;
       month = "0" + month;
     }
-    var day = $scope.setEndDate.getDate();
+    var day = $scope.extendingCampaign.ends_date_time.getDate();
     if (day > 9) {} else {
 
       day = "0" + day;
     }
-    var hours = $scope.setEndDate.getHours();
+    var hours = $scope.extendingCampaign.ends_date_time.getHours();
     if (hours > 9) {} else {
       hours = "0" + hours;
     }
-    var mins = $scope.setEndDate.getMinutes();
+    var mins = $scope.extendingCampaign.ends_date_time.getMinutes();
     if (mins > 9) {} else {
       mins = "0" + mins;
     }
-    var datestring = $scope.setEndDate.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+    var datestring = $scope.extendingCampaign.ends_date_time.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
     $scope.extendingCampaign.ends = datestring;
     $scope.extendingCampaign.ends = $scope.extendingCampaign.ends.replace(/\//g, "-");
 
@@ -217,6 +304,74 @@ app.controller('CampaignManagementCtrl', function($location, $scope, $rootScope,
       $('.extend-campaign-modal').modal('hide');
     });
   }
+
+  $scope.$watchGroup(['extendingCampaign.duration_type_id', 'extendingCampaign.runtime_days', 'extendingCampaign.starts_date_time'], function(values, oldValues) {
+    // only watch after finish loading
+    if (typeof oldValues[1] == "undefined") {
+      return;
+    }
+
+    $scope.oldtype_id = angular.copy($scope.extendingCampaign.duration_type_id);
+    if (!values[0] || values[1] < 0 || !values[2]) {
+      // unset extendingCampaign.ends
+      $scope.extendingCampaign.ends_date_time = "";
+    }
+
+    if (values[2]) {
+      if (values[1]) {
+        if (values[0]) {
+          var ip = parseInt(values[0]);
+          var days;
+          switch (ip) {
+            case 1:
+              days = values[1];
+              break;
+            case 2:
+              days = values[1] * 7;
+              break;
+            case 3:
+              days = values[1] * 30;
+              break;
+            case 4:
+              days = values[1] * 365;
+              break;
+            default:
+              days = 0;
+          }
+
+          if (isValidDate(new Date(days * 86400000))) {
+            if (typeof $scope.extendingCampaign.starts_date_time === 'string') {
+              $scope.extendingCampaign.ends_date_time = new Date(fix_date($scope.extendingCampaign.starts_date_time) + (days * 86400000));
+            } else {
+              $scope.extendingCampaign.ends_date_time = new Date($scope.extendingCampaign.starts_date_time.getTime() + (days * 86400000));
+            }
+
+          }
+        }
+      }
+    }
+  });
+
+  $scope.$watch('extendingCampaign.ends_date_time', function(values) {
+    if (values) {
+      $('#end-date-field .select-error').remove();
+      $('#end-date-field').removeClass('error');
+    }
+    if ($scope.checkstatus) {
+      $scope.checkstatus = false;
+      $scope.extendingCampaign.starts = convertDate($scope.extendingCampaign.starts_date_time);
+      // if extendingCampaign.end_days also exists
+      if ($scope.extendingCampaign.starts_date_time) {
+        // if valid value
+        $scope.extendingCampaign.ends = convertDate(values);
+        // assign extendingCampaign.ends
+        $scope.extendingCampaign.runtime_days = Math.round((fix_date($scope.extendingCampaign.ends_date_time) - fix_date($scope.extendingCampaign.starts_date_time)) / 86400000);
+        $scope.extendingCampaign.duration_type_id = 1;
+        var day_option = $translate.instant('Day');
+        $('#duration_dtext').text(day_option);
+      }
+    }
+  });
 
   $scope.campaignManagerTransactionHide = function(campaign) {
     if ($scope.public_settings.site_campaign_management.transaction_hide) {

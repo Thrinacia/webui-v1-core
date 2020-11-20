@@ -1659,12 +1659,12 @@ i.circular.icon {
 .extend-campaign-modal {
 	.content {
 		div.ui.grid {
-			.quickdate {
-				padding: 0px;
-				margin: 0px 15px;
-			}
-			input {
-				margin: 0px 15px;
+			#end-date-field {
+				.quickdate-popup{
+					&.open{
+						top: -299px;
+					}
+				}
 			}
 		}
 	}

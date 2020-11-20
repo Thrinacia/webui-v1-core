@@ -79,7 +79,7 @@
 <body ng-controller="MainCtrl" class="container main-color" id="{{$root.page_route}}" ng-class="theme_classes" translate-cloak ng-cloak>
   <div class="unsupported" ng-if="isFacebookApp()">
     <p translate>unsupported_browser_message</p>
-    <p>{{location}}</p>
+    <p id="link-location">{{location}}</p>
   </div> 
   <div id="loader" class="ui page dimmer">
     <div class="content">
@@ -100,7 +100,11 @@
         <img class="ui image" ng-src="{{logoUrl}}">
       </div>
     </a>
-    <a ng-class="{active: $location.path() == '/' + page.path}" class="item menu-item" ng-repeat="page in headerMenu" ng-href="{{page.path}}" my-target="{{page.id}}" ng-bind="page.name" target="_self"></a>
+    <div class="parent-with-children" ng-repeat-start="page in headerMenu" ng-if="checkForSubMenu(page)">
+      <a ng-class="{active: $location.path() == '/' + page.path}" class="item menu-item" ng-href="{{page.path}}" my-target="{{page.id}}" ng-bind="page.name" target="_self"></a>
+      <a ng-class="{active: $location.path() == '/' + subpage.path}" ng-repeat="subpage in page.subpages" class="item child-item" ng-href="{{subpage.path}}" my-target="{{subpage.id}}" ng-bind="subpage.name" target="_self"></a>
+    </div>
+    <a ng-repeat-end ng-if="!checkForSubMenu(page)" ng-class="{active: $location.path() == '/' + page.path}" class="item menu-item" ng-href="{{page.path}}" my-target="{{page.id}}" ng-bind="page.name" target="_self"></a>
     <div ng-show="User.isLoggedIn()">
 
       <h4 class="ui horizontal header divider inverted mobile-menu-header" translate>
@@ -108,7 +112,7 @@
       </h4>
       <div class="menu">
 
-        <a ng-if="User.portal_admin" class="item menu-item" ng-click="navItem()" ng-class="{active: $location.path() === '/admin/dashboard' && $location.hash() !== 'subscription-settings'}" href="/admin/dashboard/" translate> mobile_header_administration </a>
+        <a ng-if="User.person_type_id != 2" class="item menu-item" ng-click="navItem()" ng-class="{active: $location.path() === '/admin/dashboard' && $location.hash() !== 'subscription-settings'}" href="/admin/dashboard/" translate> mobile_header_administration </a>
         <a ng-if="User.campaign_manager" class="item menu-item" ng-class="{active: $location.path() === '/campaign-manager'}" href="/campaign-manager" translate> mobile_header_mycampaigns </a>
         <a ng-if="User.campaign_backer" class="item menu-item" ng-class="{active: $location.path() === '/pledge-history'}" href="/pledge-history" translate> mobile_header_mycontributions </a>
         <a class="item menu-item" class="item menu-item" ng-class="{active: $location.path() === 'message-center'}" href="/message-center" translate> mobile_header_mymessages</a>
@@ -205,7 +209,10 @@
   <script src="scripts/controllers/WpListCtrl.js"></script>
   <script src="scripts/controllers/WPCtrl.js"></script>
   <script src="scripts/controllers/AccountCtrl.js"></script>
+  <script src="scripts/controllers/AccountSecurityCtrl.js"></script>
   <script src="scripts/controllers/AnalyticsCtrl.js"></script>
+
+  <script src="scripts/controllers/TruliooVerificationCtrl.js"></script>
 
   <script src="scripts/controllers/InlineContributionCtrl.js"></script>
   <script src="scripts/controllers/GuestCampaignCtrl.js"></script>
@@ -213,6 +220,7 @@
   <script src="scripts/controllers/AdminReportCtrl.js"></script>
   <script src="scripts/controllers/AdminUserManagementCtrl.js"></script>
   <script src="scripts/controllers/AdminCategoryManagementCtrl.js"></script>
+  <script src="scripts/controllers/AdminSiteMenuManagementCtrl.js"></script>
   <script src="scripts/controllers/AdminCampaignManagementCtrl.js"></script>
   <script src="scripts/controllers/AdminCouponManagementCtrl.js"></script>
   <script src="scripts/controllers/AdminPageManagementCtrl.js"></script>
@@ -234,6 +242,8 @@
   <script src="scripts/services/ValidateURLService.js"></script>
   <script src="scripts/services/ThemeService.js"></script>
   <script src="scripts/money_symbols.js"></script>
+  <!-- <script src="scripts/services/TruliooIdentityService.js"></script> -->
+
 
 
   <!-- jssor -->

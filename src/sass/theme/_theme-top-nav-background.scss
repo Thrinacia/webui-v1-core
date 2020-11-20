@@ -7,7 +7,9 @@
     #mobile-sidebar {
       background-color: $background-color;
     }
-
+    .child-menu-dropdown{
+      background-color: $background-color !important;
+    }
     .main-menu.ui.inverted.menu {
       .nav-wrap {
         .nav-main-right {

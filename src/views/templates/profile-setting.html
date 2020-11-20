@@ -14,6 +14,7 @@
 							<a class="item" ng-show="!public_settings.site_campaign_enable_organization_name" data-tab="companies" ng-click="clickHash('companies')" translate> profile_setting_company </a>
 							<a class="item" data-tab="addresses" ng-click="clickHash('addresses')" translate> profile_setting_address</a>
 							<a class="item" data-tab="phone" ng-click="clickHash('phone')" translate> profile_setting_phone</a>
+							<a class="item" data-tab="security" ng-click="clickHash('security')" translate> profile_setting_security</a>
 							<a class="item" data-tab="account-settings" ng-click="clickHash('account-settings')" ng-hide="isAccSetEnabled" translate>  profile_setting_account_setting</a>
 						</div>
 					</div>
@@ -31,6 +32,9 @@
 				</div>
 				<div class="ui tab" data-tab="phone">
 					<div class="menu-tab-content" ng-include src="'views/templates/partials/profile-setting/tab-phone-setting.html'" ng-controller="TabPhoneCtrl"></div>
+				</div>
+				<div class="ui tab" data-tab="security">
+					<div class="menu-tab-content" ng-include src="'views/templates/partials/profile-setting/tab-security-setting.html'" ng-controller="SecurityTabCtrl"></div>
 				</div>
 				<div class="ui tab" data-tab="account-settings" ng-controller="AccountTabCtrl">
 					<div class="menu-tab-content" ng-include src="'views/templates/account.html'" ng-hide="isAccSetEnabled"></div>

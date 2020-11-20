@@ -3741,11 +3741,24 @@
               &.td-empty {
                 width: 12%;
               }
-
+              &.td-menu-empty {
+                width: 5%;
+              }
               &.td-id {
                 width: 4%;
               }
-
+              &.t-menu-check-box {
+                width: 5%;
+              }
+              &.td-menu-name {
+                width: 25%;
+              }
+              &.td-path {
+                width: 20%;
+              }
+              &.td-delete {
+                width: 10%;
+              }
               &.td-name {
                 width: 300px;
               }
@@ -6066,7 +6079,9 @@ body.loading .loader-modal {
     }
   }
 }
-
+.menu-dropdown {
+  margin-right: 0.25em;
+}
 .ui.input {
   &.tracking-input {
     width: unset !important;

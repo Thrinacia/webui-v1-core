@@ -73,12 +73,14 @@ app.run(function($sce, $http, $window, $rootScope, $route, $location, $templateC
   $translatePartialLoader.addPart('tab-campaign');
   $translatePartialLoader.addPart('tab-page');
   $translatePartialLoader.addPart('tab-portalSetting');
+  $translatePartialLoader.addPart('tab-site-menu');
   $translatePartialLoader.addPart('tab-api');
   $translatePartialLoader.addPart('tab-email');
   $translatePartialLoader.addPart('profile');
   $translatePartialLoader.addPart('reset-password');
   $translatePartialLoader.addPart('campaign-widget');
   $translatePartialLoader.addPart('charity-helper');
+  $translatePartialLoader.addPart('trulioo-verification');
 
   $translate.refresh().then(function(success) {
     $rootScope.partsDone = true;
@@ -385,6 +387,8 @@ app.constant('USER_ROLES', {
   all: '*',
   admin: '1',
   user: '2',
+  campaign: '3',
+  page: '4'
 });
 
 // Regions for campaign resources to indicate where the resource goes
@@ -522,6 +526,8 @@ app.controller('MainCtrl', ['$scope', '$location', 'UserService', 'Restangular',
     var isTransDone = false;
     var isRouteDone = false;
 
+    $scope.showLinkCopied = false;
+
     $scope.loader_enabled = false;
     if (API.loader_enabled !== undefined) {
       $scope.loader_enabled = API.loader_enabled;
@@ -614,6 +620,7 @@ app.controller('MainCtrl', ['$scope', '$location', 'UserService', 'Restangular',
           var ua = navigator.userAgent || navigator.vendor || window.opera;
           return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1);
         }
+
       }
 
       $scope.site_load_icon = {};
@@ -740,7 +747,8 @@ app.controller('MainCtrl', ['$scope', '$location', 'UserService', 'Restangular',
         document.body.classList.add('is-logged-in');
         // restrict users not to go to authorized pages
         // Make sure admin-only pages are off-limits to other roles
-        if (url == "admin" && User.portal_admin != roles.admin) {
+
+        if (url == "admin" && (User.person_type_id == roles.user)) {
           $location.path('/');
         } else if (url == 'inline-contribution') {
           $location.path('/explore');
@@ -750,6 +758,62 @@ app.controller('MainCtrl', ['$scope', '$location', 'UserService', 'Restangular',
         else if (url == "login" || newValue.split("/")[1] == "register") {
           $location.path('/');
         }
+
+        //Ensuring that non-portal admins cannot access pages outside their permissions
+        var url_secondary = $location.url().split("/");
+        url_secondary = url_secondary[2]
+        switch (url_secondary) {
+          case null:
+            break;
+          case 'dashboard#campaigns':
+            if(User.person_type_id != "1" && User.person_type_id != "3"){
+              $location.path('/')
+            }
+          break
+          case 'dashboard#pages':
+            if(User.person_type_id != "1" && User.person_type_id != "4"){
+              $location.path('/')
+            }
+          break;
+          case 'dashboard#users':
+            if(User.person_type_id != "1"){
+              $location.path('/')
+            }
+          break;
+          case 'dashboard#categories':
+            if(User.person_type_id != "1"){
+              $location.path('/')
+            }
+          break;
+          case 'dashboard#menus':
+            if(User.person_type_id != "1"){
+              $location.path('/')
+            }
+          break;
+          case 'dashboard#coupons':
+            if(User.person_type_id != "1"){
+              $location.path('/')
+            }
+          break;
+          case 'dashboard#portal-settings':
+            if(User.person_type_id != "1"){
+              $location.path('/')
+            }
+          break;
+          case 'dashboard#web-settings':
+            if(User.person_type_id != "1"){
+              $location.path('/')
+            }
+          break;
+          case 'dashboard#subscription-settings':
+            if(User.person_type_id != "1"){
+              $location.path('/')
+            }
+          break;
+          default:
+            break;
+        }
+
 
       }
 
@@ -793,7 +857,6 @@ app.controller('MainCtrl', ['$scope', '$location', 'UserService', 'Restangular',
     $scope.scrollToBottom = function() {
       var saveheight = $(document).height()
       saveheight = saveheight - 900
-      console.log(saveheight)
       $('html,body').animate({
         scrollTop: saveheight
       }, 800);

@@ -295,7 +295,7 @@
                 </div>
 
                 <!-- CUSTOMER ENTER COUPON FORM -->
-                <div class="ui two column stackable grid pledge-amount" ng-show = "pledgeLevel && public_settings.site_campaign_coupon_management.toggle">
+                <div class="ui two column stackable grid pledge-amount" ng-if = "pledgeLevel && public_settings.site_campaign_coupon_management.toggle">
                   <div class="ten wide column your-pledge">
                     <h4 class="title" translate>pledge_campaign_enter_coupon</h4>
                     <form ng-submit = "applyCode(couponCode)" class="ui large form contribution-form">

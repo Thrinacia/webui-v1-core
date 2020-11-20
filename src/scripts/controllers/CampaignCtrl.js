@@ -618,8 +618,8 @@ app.controller('CampaignCtrl', function($timeout, $http, $element, $anchorScroll
       $scope.progressHide = false;
       if ($scope.public_settings.site_campaign_progress_bar_hide) {
         $scope.progressHide = $scope.public_settings.site_campaign_progress_bar_hide;
-      } else if ($scope.campaign.settings.progress_bar_hide){
-        $scope.progressHide = $scope.campaign.settings.progress_bar_hide;
+      // } else if ($scope.campaign.settings.progress_bar_hide){
+      //   $scope.progressHide = $scope.campaign.settings.progress_bar_hide;
       } else {
         $scope.progressHide = $scope.public_settings.site_campaign_progress_bar_hide;
       }

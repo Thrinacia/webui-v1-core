@@ -23,6 +23,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
       }
     }
   }
+  // var user = UserService;
 
   $scope.thresholdvalue = {
     value: 0
@@ -38,6 +39,12 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
     "resourceId": -1
   };
   $scope.user = UserService;
+
+  Restangular.one('portal/person/attribute?filters={"person_id":"' + $scope.user.id + '"}').customGET().then(function (success) {
+    if(success[0].attributes && success[0].attributes.trulioo_verified == true){
+      $rootScope.verified = true;
+    }
+  });
 
   var base_url = $location.absUrl().replace($location.path(), "") + "/";
   $scope.top_header_protocals = [{

@@ -9,16 +9,29 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
   var msg = {};
   $scope.companies = [];
   $scope.campaign_buffer = [];
+  $scope.public_settings = {};
+
   // campaign status request
   Restangular.one('campaign/status').customGET().then(function (success) {
     $scope.campaignStatus = success;
   });
+  Restangular.one('portal/setting').getList().then(function (success) {
+    $scope.public_settings = {};
+    angular.forEach(success, function (value) {
+      if (value.setting_type_id == 3) {
+        $scope.public_settings[value.name] = value.value;
+        $scope.payment_gateway = $scope.public_settings.site_payment_gateway;
+      }
+    });
+  });
+
   $scope.isFeaturedCampaignsLoaded = false;
   $scope.loadCampaignRevisions = function () {
     Restangular.one('portal/campaign-revision').customGET().then(function (success) {
       $scope.campaignRevisions = success.plain();
     });
   }
+
   $scope.loadCampaignRevisions();
 
   $scope.filename = "transactiondatadetails";
@@ -1436,6 +1449,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         }
         $scope.allCampaignsCompletecsv.push(data2);
       });
+
       return $scope.allCampaignsCompletecsv;
     });
   }
@@ -1589,7 +1603,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         $scope.allTransactionArray = $scope.allTransactionArray.concat(resArr.data);
       });
       var nativeLookup = $scope.public_settings.site_theme_shipping_native_lookup;
-      var value = $translate.instant(['transaction_details_withdrawn', 'transaction_details_campaign', 'transaction_details_card_number', 'transaction_details_Manual_Transaction', 'transaction_details_na', 'transaction_details_transaction_id', 'transaction_details_contributors_first', 'transaction_details_contributors_last', 'transaction_details_reward', 'transaction_details_amount', 'transaction_details_status', 'transaction_details_date', 'transaction_details_contributors_email', 'transaction_details_shipping_address', 'transaction_details_phone_number', 'transaction_details_reward_attribute', "transaction_details_charity_UK_taxpayer", "transaction_details_charity_giftaid", "transaction_details_charity_fullname", "transaction_details_charity_fulladdress", "transaction_details_charity_postcode", "transaction_details_charity_amount", "transaction_details_organization_name", "transaction_details_organization_email", "transaction_details_organization_phone", "transaction_details_organization_address", "tab_campaign_transaction_details_tip_amount"]);
+      var value = $translate.instant(['transaction_details_street_address', 'transaction_details_postal_code','transaction_details_city', 'transaction_details_country', 'transaction_details_withdrawn', 'transaction_details_campaign', 'transaction_details_card_number', 'transaction_details_Manual_Transaction', 'transaction_details_na', 'transaction_details_transaction_id', 'transaction_details_contributors_first', 'transaction_details_contributors_last', 'transaction_details_reward', 'transaction_details_amount', 'transaction_details_status', 'transaction_details_date', 'transaction_details_contributors_email', 'transaction_details_shipping_address', 'transaction_details_phone_number', 'transaction_details_reward_attribute', "transaction_details_charity_UK_taxpayer", "transaction_details_charity_giftaid", "transaction_details_charity_fullname", "transaction_details_charity_fulladdress", "transaction_details_charity_postcode", "transaction_details_charity_amount", "transaction_details_organization_name", "transaction_details_organization_email", "transaction_details_organization_phone", "transaction_details_organization_address", "tab_campaign_transaction_details_tip_amount"]);
       $scope.cardnum = value.transaction_details_card_number;
       $scope.noreward = value.transaction_details_na;
       $scope.tid = value.transaction_details_transaction_id;
@@ -1601,7 +1615,10 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
       $scope.tnamel = value.transaction_details_contributors_last;
       $scope.temail = value.transaction_details_contributors_email;
       $scope.tdate = value.transaction_details_date;
-      $scope.taddress = value.transaction_details_shipping_address;
+      $scope.taddress = value.transaction_details_street_address;
+      $scope.tcountry = value.transaction_details_country;
+      $scope.tcity = value.transaction_details_city;
+      $scope.tpostal = value.transaction_details_postal_code;
       $scope.tphone = value.transaction_details_phone_number;
       $scope.twithdraw = value.transaction_details_withdrawn;
       $scope.manual = value.transaction_details_Manual_Transaction;
@@ -1622,6 +1639,9 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         'Card': $scope.cardnum,
         'Date': $scope.tdate,
         'Address': $scope.taddress,
+        'City': $scope.tcity,
+        'Country': $scope.tcountry,
+        'Postal Code': $scope.tpostal,
         'Phone': $scope.tphone,
         'Attributes': $scope.attributes,
         'Organization Name': $scope.tbusiness_organization,
@@ -1719,15 +1739,16 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
                 }
                 $scope.shipadd.subcountry = $scope.shipadd.subcountry_native_name != null ? $scope.shipadd.subcountry_native_name : $scope.shipadd.subcountry;
                 $scope.shipadd.country = $scope.shipadd.country_native_name != null ? $scope.shipadd.country_native_name : $scope.shipadd.country;
-                $scope.completeaddress = $scope.shipadd.country + ", " + $scope.shipadd.mail_code + ", " + $scope.shipadd.subcountry + ", " + $scope.shipadd.city + ", " + $scope.shipadd.street1;
+                $scope.completeaddress = $scope.shipadd.street1 + ' ' + $scope.shipadd.street2;
+                // $scope.completeaddress = $scope.shipadd.country + ", " + $scope.shipadd.mail_code + ", " + $scope.shipadd.subcountry + ", " + $scope.shipadd.city + ", " + $scope.shipadd.street1;
               } else {
                 if ($scope.shipadd.hasOwnProperty('city_alt') && $scope.public_settings.hasOwnProperty('site_campaign_alt_city_input_toggle')) {
                   $scope.shipadd.city = $scope.shipadd.city_alt;
                 }
-                $scope.completeaddress = $scope.shipadd.street1 + ", " + $scope.shipadd.city + " " + $scope.shipadd.subcountry + " " + $scope.shipadd.mail_code + " , " + $scope.shipadd.country;
+                $scope.completeaddress = $scope.shipadd.street1 + ' ' + $scope.shipadd.street2;
+                // $scope.completeaddress = $scope.shipadd.street1 + ", " + $scope.shipadd.city + " " + $scope.shipadd.subcountry + " " + $scope.shipadd.mail_code + " , " + $scope.shipadd.country;
               }
               
-              // data1 = {'$scope.personname': $scope.addbacker.first_name, '$scope.personemail':$scope.addbacker.email,'$scope.personaddress':$scope.completeaddress};
               data1 = {
                 'ID': value.stripe_transaction_id,
                 'Campaign': $scope.campaign_name,
@@ -1740,6 +1761,9 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
                 'Card': $scope.cardn,
                 'Date': value.created.slice(0, 19),
                 'Address': $scope.completeaddress,
+                'City': $scope.shipadd.city,
+                'Country': $scope.shipadd.country,
+                'Postal Code': $scope.shipadd.mail_code,
                 'Phone': $scope.dataPhoneNumber,
                 'Attributes': JSON.stringify(value.backer[0].attributes),
                 'Organization Name': organization_name,
@@ -1760,6 +1784,9 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
                 'Card': $scope.cardn,
                 'Date': value.created.slice(0, 19),
                 'Address': $scope.na,
+                'City': $scope.na,
+                'Country': $scope.na,
+                'Postal Code': $scope.na,
                 'Phone': $scope.dataPhoneNumber,
                 'Attributes': JSON.stringify(value.backer[0].attributes),
                 'Organization Name': organization_name,
@@ -1802,6 +1829,293 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
       });
       return $scope.allTransactioncsv;
     });
+  }
+  
+  $scope.createTransactionCompleteCSV = function () {
+
+    msg = {
+      'loading': true,
+      'loading_message': 'in_progress'
+    }
+    $rootScope.floatingMessage = msg;
+    var campaignQueue = getSelectedItems(),
+      requestQueue = []
+    if (campaignQueue.length === 0) {
+      msg = {
+        'header': "tab_campaigns_select_error",
+      }
+      $rootScope.floatingMessage = msg;
+      $scope.hideFloatingMessage();
+
+    } else {
+
+      angular.forEach(campaignQueue, function (campaign) {
+        // make put request to change campaign status
+        requestQueue.push(RestFullResponse.all('campaign/' + campaign.id + '/stats').getList().then(function (success) {
+          // $scope.transaction_detail = success.data;
+          for(var i = 0; i< success.data.length; i++) {
+            success.data[i]["campaign_name"] = campaign.name;
+          }
+
+          return success; 
+        }));
+      });
+      
+      return $q.all(requestQueue).then(function (success) {
+        var selectedTransactionsArray = [];
+        var selectedTransactionsCsv = []
+        // Create array of transactions
+        success.forEach(function (resArr) {
+          selectedTransactionsArray = selectedTransactionsArray.concat(resArr.data);
+        });
+        var nativeLookup = $scope.public_settings.site_theme_shipping_native_lookup;
+        var value = $translate.instant(['transaction_details_street_address', 'transaction_details_postal_code','transaction_details_city', 'transaction_details_country','transaction_details_withdrawn', 'transaction_details_campaign', 'transaction_details_card_number', 'transaction_details_Manual_Transaction', 'transaction_details_na', 'transaction_details_transaction_id', 'transaction_details_contributors_first', 'transaction_details_contributors_last', 'transaction_details_reward', 'transaction_details_amount', 'transaction_details_status', 'transaction_details_date', 'transaction_details_contributors_email', 'transaction_details_shipping_address', 'transaction_details_phone_number', 'transaction_details_reward_attribute', "transaction_details_charity_UK_taxpayer", "transaction_details_charity_giftaid", "transaction_details_charity_fullname", "transaction_details_charity_fulladdress", "transaction_details_charity_postcode", "transaction_details_charity_amount", "transaction_details_organization_name", "transaction_details_organization_email", "transaction_details_organization_phone", "transaction_details_organization_address", "tab_campaign_transaction_details_tip_amount"]);
+        
+        $scope.cardnum = value.transaction_details_card_number;
+        $scope.noreward = value.transaction_details_na;
+        $scope.tid = value.transaction_details_transaction_id;
+        $scope.tcampaign = value.transaction_details_campaign;
+        $scope.treward = value.transaction_details_reward;
+        $scope.tamount = value.transaction_details_amount;
+        $scope.tstatus = value.transaction_details_status;
+        $scope.tnamef = value.transaction_details_contributors_first;
+        $scope.tnamel = value.transaction_details_contributors_last;
+        $scope.temail = value.transaction_details_contributors_email;
+        $scope.tdate = value.transaction_details_date;
+        $scope.taddress = value.transaction_details_street_address;
+        $scope.tcountry = value.transaction_details_country;
+        $scope.tcity = value.transaction_details_city;
+        $scope.tpostal = value.transaction_details_postal_code;
+        $scope.tphone = value.transaction_details_phone_number;
+        $scope.twithdraw = value.transaction_details_withdrawn;
+        $scope.manual = value.transaction_details_Manual_Transaction;
+        $scope.attributes = value.transaction_details_reward_attribute;
+        $scope.tbusiness_organization = value.transaction_details_organization_name;
+        $scope.tbusiness_organization_email = value.transaction_details_organization_email;
+        $scope.tbusiness_organization_phone = value.transaction_details_organization_phone;
+        $scope.tbusiness_organization_address = value.transaction_details_organization_address;
+        $scope.csvHeaders = {
+          'ID': $scope.tid,
+          'Campaign': $scope.tcampaign,
+          'Reward': $scope.treward,
+          'Amount': $scope.tamount,
+          'Status': $scope.tstatus,
+          'First Name': $scope.tnamef,
+          'Last Name': $scope.tnamel,
+          'Email': $scope.temail,
+          'Card': $scope.cardnum,
+          'Date': $scope.tdate,
+          'Address': $scope.taddress,
+          'City': $scope.tcity,
+          'Country': $scope.tcountry,
+          'Postal Code': $scope.tpostal,
+          'Phone': $scope.tphone,
+          'Attributes': $scope.attributes,
+          'Organization Name': $scope.tbusiness_organization,
+          'Organization Email': $scope.tbusiness_organization_email,
+          'Organization Phone': $scope.tbusiness_organization_phone,
+          'Organization Address': $scope.tbusiness_organization_address,
+        };
+
+        if ($scope.tippingOptions.toggle) {
+          $scope.csvHeaders.Tip = value.tab_campaign_transaction_details_tip_amount;
+        }
+
+        // if charity is enabled site_campaign_charity_helper_enable
+        if ($scope.public_settings.site_campaign_charity_helper_enable) {
+          $scope.csvHeaders["UK Tax Payer"] = value.transaction_details_charity_UK_taxpayer;
+          $scope.csvHeaders["Gift Aid"] = value.transaction_details_charity_giftaid;
+          $scope.csvHeaders["Full name"] = value.transaction_details_charity_fullname;
+          $scope.csvHeaders["Full Address"] = value.transaction_details_charity_fulladdress;
+          $scope.csvHeaders["Postcode"] = value.transaction_details_charity_postcode;
+          $scope.csvHeaders["Gift Amount"] = value.transaction_details_charity_amount;
+        }
+  
+        if ($scope.public_settings.site_campaign_allow_contribution_message) {
+          $scope.csvHeaders['Note'] = 'Note';
+        }
+
+        selectedTransactionsCsv.push($scope.csvHeaders);
+
+        angular.forEach(selectedTransactionsArray, function (value) {
+          // ($scope.twithdraw);
+          var data1 = {};
+          var organization_name = '';
+          var organization_email = '';
+          $scope.businessDataPhoneNumber = '';
+          $scope.busCompleteaddress = '';
+          // $scope.campaign_name = cname;
+          if (value.card) {
+            $scope.cardn = '****' + ' ' + '****' + ' ' + '****' + value.card[0].last4;
+            $scope.tstatus = globalStripeStatus[value.stripe_transaction_status_id - 1];
+          } else {
+            $scope.cardn = value.reference_no;
+            $scope.tstatus = $scope.manual;
+          }
+          if (value.backer) {
+            if (value.backer[0].disabled) {
+              $scope.tstatus = $scope.twithdraw;
+            }
+  
+            if (value.backer[0].business_organization && value.backer[0].business_organization[0]) {
+              organization_name = value.backer[0].business_organization[0].name;
+              organization_email = value.backer[0].business_organization[0].email;
+  
+              var businessPhoneNumberObj = value.backer[0].business_organization[0].business_organization_shipping_phone_number;
+              var businessPhoneType;
+              if (businessPhoneNumberObj != null) {
+                businessPhoneType = globalPhoneNumberType[businessPhoneNumberObj[0].phone_number_type];
+              }
+              $scope.businessDataPhoneNumber = businessPhoneNumberObj != null ? businessPhoneNumberObj[0].number + " " + businessPhoneType : "";
+  
+              if (value.backer[0].hasOwnProperty('business_organization') && value.backer[0].business_organization[0].business_organization_shipping_address) {
+                $scope.busShipadd = value.backer[0].business_organization[0].business_organization_shipping_address[0];
+              }
+  
+              if (nativeLookup) {
+                $scope.busShipadd.city = $scope.busShipadd.city_native_name != null ? $scope.busShipadd.city_native_name : $scope.busShipadd.city;
+                $scope.busShipadd.subcountry = $scope.busShipadd.subcountry_native_name != null ? $scope.busShipadd.subcountry_native_name : $scope.busShipadd.subcountry;
+                $scope.busShipadd.country = $scope.busShipadd.country_native_name != null ? $scope.busShipadd.country_native_name : $scope.busShipadd.country;
+                $scope.busCompleteaddress = $scope.busShipadd.country + ", " + $scope.busShipadd.mail_code + ", " + $scope.shipadd.subcountry + ", " + $scope.busShipadd.city + ", " + $scope.busShipadd.street1;
+              } else {
+                if($scope.busShipadd !== undefined){
+                  if ($scope.busShipadd.hasOwnProperty('city_alt') && $scope.public_settings.hasOwnProperty('site_campaign_alt_city_input_toggle')) {
+                    $scope.busShipadd.city = $scope.busShipadd.city_alt;
+                  }
+                  $scope.busCompleteaddress = $scope.busShipadd.street1 + " , " + $scope.busShipadd.city + " " + $scope.busShipadd.subcountry + " " + $scope.busShipadd.mail_code + " , " + $scope.busShipadd.country;
+                }
+              }
+            }
+            if (value.backer[0].person) {
+              $scope.addbacker = value.backer[0].person[0];
+              if (value.backer[0].pledge_level) {
+                $scope.rewardname = value.backer[0].pledge_level[0].name;
+              } else {
+                $scope.rewardname = $scope.noreward;
+              }
+              var phoneNumberObj = value.backer[0].person[0].person_shipping_phone_number;
+              var phoneType;
+              if (phoneNumberObj != null) {
+                phoneType = globalPhoneNumberType[phoneNumberObj[0].phone_number_type];
+              }
+              $scope.dataPhoneNumber = phoneNumberObj != null ? phoneNumberObj[0].number + " " + phoneType : "";
+              var parsedEmail = $scope.addbacker.email.split("|||")[0];
+              if ($scope.addbacker.person_shipping_address) {
+                $scope.shipadd = $scope.addbacker.person_shipping_address[0];
+                if (nativeLookup) {
+                  $scope.shipadd.city = $scope.shipadd.city_native_name != null ? $scope.shipadd.city_native_name : $scope.shipadd.city;
+                  if ($scope.shipadd.hasOwnProperty('city_alt') && $scope.public_settings.hasOwnProperty('site_campaign_alt_city_input_toggle')) {
+                    $scope.shipadd.city = $scope.shipadd.city_alt;
+                  }
+                  $scope.shipadd.subcountry = $scope.shipadd.subcountry_native_name != null ? $scope.shipadd.subcountry_native_name : $scope.shipadd.subcountry;
+                  $scope.shipadd.country = $scope.shipadd.country_native_name != null ? $scope.shipadd.country_native_name : $scope.shipadd.country;                  
+                  $scope.completeaddress = $scope.shipadd.street1 + ' ' + $scope.shipadd.street2;
+                  // $scope.completeaddress = $scope.shipadd.country + ", " + $scope.shipadd.mail_code + ", " + $scope.shipadd.subcountry + ", " + $scope.shipadd.city + ", " + $scope.shipadd.street1;
+                } else {
+                  if ($scope.shipadd.hasOwnProperty('city_alt') && $scope.public_settings.hasOwnProperty('site_campaign_alt_city_input_toggle')) {
+                    $scope.shipadd.city = $scope.shipadd.city_alt;
+                  }
+                  $scope.completeaddress = $scope.shipadd.street1 + ' ' + $scope.shipadd.street2;
+                  // $scope.completeaddress = $scope.shipadd.street1 + ", " + $scope.shipadd.city + " " + $scope.shipadd.subcountry + " " + $scope.shipadd.mail_code + " , " + $scope.shipadd.country;
+                }
+                
+                data1 = {
+                  'ID': value.stripe_transaction_id,
+                  'Campaign': value.campaign_name,
+                  'Reward': $scope.rewardname,
+                  'Amount': value.backer[0].amount,
+                  'Status': $scope.tstatus,
+                  'First Name': $scope.addbacker.first_name,
+                  'Last Name': $scope.addbacker.last_name,
+                  'Email': parsedEmail,
+                  'Card': $scope.cardn,
+                  'Date': value.created.slice(0, 19),
+                  'Address': $scope.completeaddress,
+                  'City': $scope.shipadd.city,
+                  'Country': $scope.shipadd.country,
+                  'Postal Code': $scope.shipadd.mail_code,
+                  'Phone': $scope.dataPhoneNumber,
+                  'Attributes': JSON.stringify(value.backer[0].attributes),
+                  'Organization Name': organization_name,
+                  'Organization Email': organization_email,
+                  'Organization Phone': $scope.businessDataPhoneNumber,
+                  'Organization Address': $scope.busCompleteaddress
+                };
+              } else {
+                data1 = {
+                  'ID': value.stripe_transaction_id,
+                  'Campaign': value.campaign_name,
+                  'Reward': $scope.rewardname,
+                  'Amount': value.backer[0].amount,
+                  'Status': $scope.tstatus,
+                  'First Name': $scope.addbacker.first_name,
+                  'Last Name': $scope.addbacker.last_name,
+                  'Email': parsedEmail,
+                  'Card': $scope.cardn,
+                  'Date': value.created.slice(0, 19),
+                  'Address': $scope.na,
+                  'City': $scope.na,
+                  'Country': $scope.na,
+                  'Postal Code': $scope.na,
+                  'Phone': $scope.dataPhoneNumber,
+                  'Attributes': JSON.stringify(value.backer[0].attributes),
+                  'Organization Name': organization_name,
+                  'Organization Email': organization_email,
+                  'Organization Phone': $scope.businessDataPhoneNumber,
+                  'Organization Address': $scope.busCompleteaddress
+                };
+              }
+              if ($scope.tippingOptions.toggle) {
+                if (value.backer[0].amount_tip && value.backer[0].amount_tip != 0) {
+                  data1.Tip = value.backer[0].amount_tip;
+                } else {
+                  data1.Tip = 0;
+                }
+              }
+  
+              // if charity is enabled site_campaign_charity_helper_enable
+              if ($scope.public_settings.site_campaign_charity_helper_enable) {
+                if (value.backer[0].attributes) {
+                  if (value.backer[0].attributes.charity) {
+                    data1["UK Tax Payer"] = value.backer[0].attributes.charity.is_a_tax_payer;
+                    data1["Gift Aid"] = value.backer[0].attributes.charity.is_a_gift;
+                    data1["Full name"] = value.backer[0].attributes.charity.fullname;
+                    data1["Full Address"] = value.backer[0].attributes.charity.address;
+                    data1["Postcode"] = value.backer[0].attributes.charity.postcode;
+                    data1["Gift Amount"] = value.backer[0].charity_helper_amount;
+                  }
+                }
+              }
+  
+              if ($scope.public_settings.site_campaign_allow_contribution_message) {
+                if (value.backer[0].hasOwnProperty('note') && typeof value.backer[0].note != 'undefined') {
+                  data1["Note"] = value.backer[0].note;
+                }
+              }
+  
+              selectedTransactionsCsv.push(data1);
+            }
+          }
+        });
+
+        msg = {
+          'header': 'tab_campaign_transactions_export',
+        }
+        $rootScope.floatingMessage = msg;
+        $scope.hideFloatingMessage();
+
+        return selectedTransactionsCsv;
+
+      }, function (failed) {
+        msg = {
+          'header': failure.data.message,
+        }
+        $rootScope.floatingMessage = msg;
+        $scope.hideFloatingMessage();
+      });
+
+
+    }
   }
 
   $scope.goBackUser = function () {
@@ -2094,50 +2408,111 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
     window.open('getstarted/' + campaign.entry_id);
   }
 
+  // Checks if the Date object is correct. Especially important when calculating something like end date where start date + xxxx
+  // may be so far away it becomes no longer a valid Date object
+  function isValidDate(d) {
+    if (Object.prototype.toString.call(d) !== "[object Date]") {
+      return false;
+    }
+    return !isNaN(d.getTime());
+  }
+
+  function convertDate(d) {
+    var value = d;
+    var date = new Date(value);
+    // if the date is not able to be converted
+    if (!isValidDate(date)) {
+      // get the year, month, day
+      var year = value.substring(0, 4);
+      var month = value.substring(5, 7);
+      var day = value.substring(8, 10);
+      // do a pure convertion
+      return new Date(year, month - 1, day);
+    }
+    return d;
+  }
+
+  function fix_date(s) {
+    if (typeof s == 'string') {
+      return Date.parse(s);
+    } else {
+      if (s)
+        return s.getTime();
+      return;
+    }
+  }
+
+  $scope.check = function() {
+    $scope.checkstatus = true;
+  }
+
   $scope.campaignManagerHasEndDate = function(campaign) {
     if(campaign.ends_date_time == undefined) {
       return false;
     }
     return true;
   }
+
+  $scope.duration_type = [{
+    id: '1',
+    type: 'duration_type_day'
+  }, {
+    id: '2',
+    type: 'duration_type_week'
+  }, {
+    id: '3',
+    type: 'duration_type_month'
+  }, {
+    id: '4',
+    type: 'duration_type_year'
+  }];
+
+  $scope.durationTypeSelected = function(typeID) {
+    $scope.extendingCampaign.duration_type_id = typeID;
+  };
+
   $scope.openExtendCampaignModal = function(campaign) {
     if (campaign) {
       $scope.extendingCampaign = campaign;
-      $scope.setEndDate = campaign.ends_date_time;
       $('.extend-campaign-modal').modal('show');
     }
   }
   $scope.extendCampaignEndDate = function() {
     // Increment current end date
-    $scope.extendDate =  new Date($scope.extendingCampaign.ends_date_time);
-    $scope.extendDate.setTime($scope.extendDate.getTime() + $scope.extendEndDays * 86400000);
+    $scope.extendingCampaign.ends_date_time =  new Date($scope.extendingCampaign.ends_date_time);
+    $scope.extendingCampaign.ends_date_time.setTime($scope.extendingCampaign.ends_date_time.getTime() + $scope.extendEndDays * 86400000);
 
-    var month = $scope.extendDate.getMonth();
+    var month = $scope.extendingCampaign.ends_date_time.getMonth();
     if (month >= 9) {
-      month = $scope.extendDate.getMonth() + 1;
+      month = $scope.extendingCampaign.ends_date_time.getMonth() + 1;
     } else {
-      month = $scope.extendDate.getMonth() + 1;
+      month = $scope.extendingCampaign.ends_date_time.getMonth() + 1;
       month = "0" + month;
     }
-    var day = $scope.extendDate.getDate();
+    var day = $scope.extendingCampaign.ends_date_time.getDate();
     if (day > 9) {} else {
 
       day = "0" + day;
     }
-    var hours = $scope.extendDate.getHours();
+    var hours = $scope.extendingCampaign.ends_date_time.getHours();
     if (hours > 9) {} else {
       hours = "0" + hours;
     }
-    var mins = $scope.extendDate.getMinutes();
+    var mins = $scope.extendingCampaign.ends_date_time.getMinutes();
     if (mins > 9) {} else {
       mins = "0" + mins;
     }
-    var datestring = $scope.extendDate.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+    var datestring = $scope.extendingCampaign.ends_date_time.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
     $scope.extendingCampaign.ends = datestring;
     $scope.extendingCampaign.ends = $scope.extendingCampaign.ends.replace(/\//g, "-");
 
-    // Approve campaign
-    $scope.extendingCampaign.entry_status_id = 2;
+    if($scope.user.portal_admin == 1) {
+      // Approve campaign
+      $scope.extendingCampaign.entry_status_id = 2;
+    }
+    if($scope.user.campaign_manager == 1) {
+      $scope.extendingCampaign.entry_status_id = 10;
+    }
 
     Restangular.one('campaign', $scope.extendingCampaign.id).customPUT($scope.extendingCampaign).then(function(success) {
       // Update current campaign list
@@ -2147,7 +2522,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         }
       });
       msg = {
-        'header': 'tab_campaign_extend_campaign_date_success',
+        'header': 'campaign_management_extend_campaign_date_success',
       }
       $rootScope.floatingMessage = msg;
       $scope.hideFloatingMessage();
@@ -2155,35 +2530,71 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
     });
   }
   $scope.setCampaignEndDate = function() {
-    if (typeof $scope.setEndDate == "string") {
-      $scope.setEndDate = new Date($scope.setEndDate);
+    if (typeof $scope.extendingCampaign.starts_date_time == "string") {
+      $scope.extendingCampaign.starts_date_time = new Date($scope.extendingCampaign.starts_date_time);
     }
-    var month = $scope.setEndDate.getMonth();
+    if ($scope.extendingCampaign.starts_date_time && typeof $scope.extendingCampaign.starts_date_time === "object") {
+      if ($scope.extendingCampaign.starts_date_time.toString().length > 19) {
+        var month = $scope.extendingCampaign.starts_date_time.getMonth();
+        if (month >= 9) {
+          month = $scope.extendingCampaign.starts_date_time.getMonth() + 1;
+        } else {
+          month = $scope.extendingCampaign.starts_date_time.getMonth() + 1;
+          month = "0" + month;
+        }
+        var day = $scope.extendingCampaign.starts_date_time.getDate();
+        if (day > 9) {} else {
+
+          day = "0" + day;
+        }
+        var hours = $scope.extendingCampaign.starts_date_time.getHours();
+        if (hours > 9) {} else {
+          hours = "0" + hours;
+        }
+        var mins = $scope.extendingCampaign.starts_date_time.getMinutes();
+        if (mins > 9) {} else {
+          mins = "0" + mins;
+        }
+        var datestring = $scope.extendingCampaign.starts_date_time.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+        $scope.extendingCampaign.starts = datestring;
+      } else {
+        $scope.extendingCampaign.starts = $scope.extendingCampaign.starts_date_time.substring(0, 16) + ":00";
+      }
+    }
+    if (typeof $scope.extendingCampaign.ends_date_time == "string") {
+      $scope.extendingCampaign.ends_date_time = new Date($scope.extendingCampaign.ends_date_time);
+    }
+    var month = $scope.extendingCampaign.ends_date_time.getMonth();
     if (month >= 9) {
-      month = $scope.setEndDate.getMonth() + 1;
+      month = $scope.extendingCampaign.ends_date_time.getMonth() + 1;
     } else {
-      month = $scope.setEndDate.getMonth() + 1;
+      month = $scope.extendingCampaign.ends_date_time.getMonth() + 1;
       month = "0" + month;
     }
-    var day = $scope.setEndDate.getDate();
+    var day = $scope.extendingCampaign.ends_date_time.getDate();
     if (day > 9) {} else {
 
       day = "0" + day;
     }
-    var hours = $scope.setEndDate.getHours();
+    var hours = $scope.extendingCampaign.ends_date_time.getHours();
     if (hours > 9) {} else {
       hours = "0" + hours;
     }
-    var mins = $scope.setEndDate.getMinutes();
+    var mins = $scope.extendingCampaign.ends_date_time.getMinutes();
     if (mins > 9) {} else {
       mins = "0" + mins;
     }
-    var datestring = $scope.setEndDate.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
+    var datestring = $scope.extendingCampaign.ends_date_time.getFullYear() + "-" + month + "-" + day + " " + hours + ":" + mins + ":00";
     $scope.extendingCampaign.ends = datestring;
     $scope.extendingCampaign.ends = $scope.extendingCampaign.ends.replace(/\//g, "-");
 
-    // Approve campaign
-    $scope.extendingCampaign.entry_status_id = 2;
+    if($scope.user.portal_admin == 1) {
+      // Approve campaign
+      $scope.extendingCampaign.entry_status_id = 2;
+    }
+    if($scope.user.campaign_manager == 1) {
+      $scope.extendingCampaign.entry_status_id = 10;
+    }
 
     Restangular.one('campaign', $scope.extendingCampaign.id).customPUT($scope.extendingCampaign).then(function(success) {
       // Update current campaign list
@@ -2193,13 +2604,81 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         }
       });
       msg = {
-        'header': 'tab_campaign_extend_campaign_date_success',
+        'header': 'campaign_management_extend_campaign_date_success',
       }
       $rootScope.floatingMessage = msg;
       $scope.hideFloatingMessage();
       $('.extend-campaign-modal').modal('hide');
     });
   }
+
+  $scope.$watchGroup(['extendingCampaign.duration_type_id', 'extendingCampaign.runtime_days', 'extendingCampaign.starts_date_time'], function(values, oldValues) {
+    // only watch after finish loading
+    if (typeof oldValues[1] == "undefined") {
+      return;
+    }
+
+    $scope.oldtype_id = angular.copy($scope.extendingCampaign.duration_type_id);
+    if (!values[0] || values[1] < 0 || !values[2]) {
+      // unset extendingCampaign.ends
+      $scope.extendingCampaign.ends_date_time = "";
+    }
+
+    if (values[2]) {
+      if (values[1]) {
+        if (values[0]) {
+          var ip = parseInt(values[0]);
+          var days;
+          switch (ip) {
+            case 1:
+              days = values[1];
+              break;
+            case 2:
+              days = values[1] * 7;
+              break;
+            case 3:
+              days = values[1] * 30;
+              break;
+            case 4:
+              days = values[1] * 365;
+              break;
+            default:
+              days = 0;
+          }
+
+          if (isValidDate(new Date(days * 86400000))) {
+            if (typeof $scope.extendingCampaign.starts_date_time === 'string') {
+              $scope.extendingCampaign.ends_date_time = new Date(fix_date($scope.extendingCampaign.starts_date_time) + (days * 86400000));
+            } else {
+              $scope.extendingCampaign.ends_date_time = new Date($scope.extendingCampaign.starts_date_time.getTime() + (days * 86400000));
+            }
+
+          }
+        }
+      }
+    }
+  });
+
+  $scope.$watch('extendingCampaign.ends_date_time', function(values) {
+    if (values) {
+      $('#end-date-field .select-error').remove();
+      $('#end-date-field').removeClass('error');
+    }
+    if ($scope.checkstatus) {
+      $scope.checkstatus = false;
+      $scope.extendingCampaign.starts = convertDate($scope.extendingCampaign.starts_date_time);
+      // if extendingCampaign.end_days also exists
+      if ($scope.extendingCampaign.starts_date_time) {
+        // if valid value
+        $scope.extendingCampaign.ends = convertDate(values);
+        // assign extendingCampaign.ends
+        $scope.extendingCampaign.runtime_days = Math.round((fix_date($scope.extendingCampaign.ends_date_time) - fix_date($scope.extendingCampaign.starts_date_time)) / 86400000);
+        $scope.extendingCampaign.duration_type_id = 1;
+        var day_option = $translate.instant('Day');
+        $('#duration_dtext').text(day_option);
+      }
+    }
+  });
 
   // Look up city based on search term, then find the cityID and store it
   $scope.searchCampaignCities = function (term) {

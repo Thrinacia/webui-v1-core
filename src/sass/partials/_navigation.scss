@@ -38,6 +38,17 @@
 			color: $hover-fontc;
 			background: $menu-hover-bg !important;
 		}
+		.menu-dropdown:hover{
+			> a,i {
+				color: $hover-fontc;	
+			}
+		}
+		.child-menu-dropdown:hover {
+			a {
+				// Imporant is used to overwrite semantic ui's use of important
+				color: $hover-fontc !important;
+			}
+		}
 		.navlogo {
 			display: table;
 			height: 63px;
@@ -63,6 +74,14 @@
 				margin-right: 0;
 			}
 		}
+		// .nav-main-left {
+		// 	.child-menu-dropdown{
+		// 		background-color: #333;
+		// 		// a {
+		// 		// 	color: white!important;
+		// 		// }
+		// 	}
+		// }
 		.nav-main-right {
 			.collapsible-settings {
 				padding: 18px 15px;
@@ -110,6 +129,18 @@
 		text-align: center;
 		img {
 			margin: 0 auto;
+		}
+	}
+	.parent-with-children {
+		// border-top: 1px solid #5b5b5b;
+		// border-bottom: 1px solid #5b5b5b;
+		.child-item{
+			// background-color:  #3c3c3c;
+			&.active,
+			&:hover {
+				background: rgba(0,0,0,0.3);
+				color: #fff;
+			}
 		}
 	}
 	.menu-item {

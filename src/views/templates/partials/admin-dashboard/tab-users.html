@@ -148,6 +148,9 @@
 							<td>
 								<div ng-if="person.person_type_id==1" class="t-status" translate> tab_user_portaladmin </div>
 								<div ng-if="person.person_type_id==2" class="t-status" translate> tab_user_registered_user </div>
+								<div ng-if="person.person_type_id==3" class="t-status" translate> tab_user_campaignadmin </div>
+								<div ng-if="person.person_type_id==4" class="t-status" translate> tab_user_pageadmin </div>
+
 							</td>
 							<td class="t-date" ng-hide="isISODate"> {{person.created.slice(0,10)}} </td>
 							<td class="t-date" ng-show="isISODate"> {{person.created | formatDate:"YYYY/MM/DD"}} </td>
@@ -236,10 +239,10 @@
 		<div class="user-edit-body ui page grid tab" data-tab="profile-details">
 			<div class="content column">
 				<h2 class="section-title ui top attached inverted header"> {{'tab_user_edit_userprofile'|translate}}
-					<div class="admin-toggle ui toggle checkbox" id="admin-box">
+					<!-- <div class="admin-toggle ui toggle checkbox" id="admin-box">
 						<input type="checkbox" name="public">
 						<label translate> tab_user_make_admin </label>
-					</div>
+					</div> -->
 				</h2>
 
 				<form name="edit_user_form" class="ui form middle attached segment" id="edit-user-form">
@@ -332,6 +335,25 @@
 									<div class="field">
 										<label translate> tab_user_pid </label>
 										<input type='text' name='pid' ng-attr-placeholder=" {{'tab_user_pid' | translate}} " ng-model="formData.pid">
+									</div>
+									<!-- field end -->
+								</div>
+								<div class="two fields">
+									<div class="field">
+										<label translate> tab_user_usertype </label>
+										<div class='ui selection dropdown fluid person-type-id-dropdown'>
+
+											<input type="hidden" ng-value="formData.person_type_id" ng-model="formData.person_type_id">
+											<div class="default text" translate> tab_user_usertype </div>
+											<i class="dropdown icon"></i>
+											<div class="menu">
+												<div class="item" ng-click="setPersonTypeId(1)" data-value="1" translate> <p> tab_user_portal_administrator </p> </div>
+												<div class="item" ng-click="setPersonTypeId(2)" data-value="2" translate> <p> tab_user_registered_user </p> </div>
+												<div class="item" ng-click="setPersonTypeId(3)" data-value="3" translate> <p> tab_user_campaign_administrator </p> </div>
+												<div class="item" ng-click="setPersonTypeId(4)" data-value="4" translate> <p> tab_user_page_administrator </p> </div>
+
+											</div>
+
 									</div>
 									<!-- field end -->
 								</div>
@@ -444,7 +466,7 @@
 					<!-- field end -->
 				</div>
 				<div class="field">
-					<label> {{'tab_user_email' | translate}} <i class="asterisk red icon"></i></label>
+					<label> {{'tab_user_email' | translate}} <i class="asterisk red icon"></i><p class="email-error" style="color: red; border: none !important"></p></label>
 					<input type='email' name='email' ng-attr-placeholder="{{'tab_user_email' | translate}} " ng-model="formData.email">
 				</div>
 				<!-- field end -->
@@ -485,6 +507,8 @@
 							<div class="menu">
 								<div class="item" data-value="2" translate> tab_user_regular_user </div>
 								<div class="item" data-value="1" translate> tab_user_portal_administrator </div>
+								<div class="item" data-value="3" translate> tab_user_campaign_administrator </div>
+								<div class="item" data-value="4" translate> tab_user_page_administrator </div>
 							</div>
 						</div>
 						<!-- DROPDOWN END -->

@@ -1,6 +1,8 @@
-app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope, $location, $scope, $timeout, $translate, Geolocator, UserService, Restangular, CreateCampaignService, FileUploadService, PortalSettingsService, PHONE_TYPE) {
+app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope, $location, $scope, $timeout, $translate, Geolocator, UserService, Restangular, CreateCampaignService, FileUploadService, PortalSettingsService, PHONE_TYPE, API_URL) {
 
   $(document).on("keydown", ".select2 .select2-search input", prevent_default_enter_key);
+
+  $scope.truliooEnabled = true;
 
   $scope.uid = UserService.person_type_id;
 
@@ -99,6 +101,15 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
       loadCampaign();
     }
 
+    if(API_URL.identity_proxy_url == undefined && $scope.public_settings.site_verification.toggle) {
+      $scope.truliooEnabled = false;
+      msg = {
+        header: 'tab_address_missing_proxy'
+      }
+      $rootScope.floatingMessage = msg;
+      $scope.hideFloatingMessage();
+    }
+  
   });
 
   $scope.userProfileAddressValidation = function() {
@@ -1335,6 +1346,11 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
               last_name: $scope.manager.last_name,
               bio: $scope.manager.bio
             };
+            
+            if (typeof $scope.public_settings.site_verification == "undefined") {
+              $scope.public_settings.site_verification = { toggle: false};
+            }
+
             $scope.address.person_id = paramID.person_id;
             if (!$scope.paddress_present) {
               Restangular.one('account/address').customPOST($scope.address);
@@ -1342,10 +1358,56 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
               Restangular.one('account/address', $scope.address.address_id).customPUT($scope.address);
             }
 
-
-
-
             savePhoneNumber();
+
+            // if($scope.public_settings.site_verification.toggle) {
+            //   $q.all([saveAddress(paramID.person_id), savePhoneNumber()]).then(function(result) {
+            //     TruliooIdentityService.generateTruliooNeededFields(UserService).then(function(fields) {
+            //       TruliooIdentityService.verifyTransaction(fields).then(function(success) {
+            //         //Need to resave custom fields
+            //         var custom_setting = {};
+            //         if ($scope.bcustom) {
+            //           angular.forEach($scope.bcustom, function(v) {
+            //             custom_setting[v.name] = v.value;
+            //           });
+            //         }
+            //         if ($scope.pcustom) {
+            //           angular.forEach($scope.pcustom, function(v) {
+            //             custom_setting[v.name] = v.value;
+            //           });
+            //         }
+
+            //         if ($scope.public_settings.site_campaign_enable_organization_name) {
+            //           custom_setting['organization_name'] = $scope.organization_name.value;
+            //           custom_setting['ein'] = $scope.organization_name.ein;
+            //         }
+
+            //         custom_setting['trulioo_verified'] = success;
+
+            //         if (custom_setting) {
+            //           custom_setting = JSON.stringify(custom_setting);
+            //         }
+                    
+            //         var customFieldData = {
+            //           attributes: custom_setting
+            //         }
+
+            //         $scope.savePersonAttributes($scope.manager.person_id, customFieldData);
+            //       });
+            //     });
+            //   });
+            // } else {
+            //   $scope.address.person_id = paramID.person_id;
+            //   if (!$scope.paddress_present) {
+            //     Restangular.one('account/address').customPOST($scope.address);
+            //   } else if ($scope.address.city_id && $scope.address.street1 && $scope.address.mail_code) {
+            //     Restangular.one('account/address', $scope.address.address_id).customPUT($scope.address);
+            //   }
+
+            //   savePhoneNumber();
+            // }
+
+            
             // Check admin user type id
             if (UserService.id == $scope.manager.id) {
               accountData.person_id = $scope.manager.person_id;

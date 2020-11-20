@@ -7,7 +7,7 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
   var url = redirectService.getUrl();
   var tmp_lst = url.split('/');
   if (tmp_lst[1] == 'authenticate' && tmp_lst[2] == 'forgot') {
-    $scope.formData.successful = {
+    $rootScope.login_successful = {
       message: "login_new_password",
     };
   }
@@ -49,10 +49,125 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
     $scope.isAccSetEnabled = $scope.isAccSetEnabled != undefined ? $scope.isAccSetEnabled : true;
     $scope.$emit("loading_finished");
   });
+
+  $scope.cancelSubmit = function() {
+    $rootScope.loading = false;
+    $rootScope.login_successful = null;
+    $scope.closeModal();
+  }
+
   // Check valid login id
   $rootScope.checklogin = true;
   $scope.formData = {};
+
+  $scope.submitWithTFA = function() {
+
+    var translation = $translate.instant(['tab_security_error_empty_code', 'tab_security_error_invalid_code']);
+
+    // since this is the second stage in the login process and uses a different controller instance,
+    // we need to re-set the the values from the html form
+    if (!$scope.formData.email) {
+      $scope.formData.email = $('#login input[name="email"]').val();
+    }
+    if (!$scope.formData.password) {
+      $scope.formData.password = $('#login input[name="password"]').val();
+    }
+
+    console.log("pre submit formData = ", $scope.formData);
+
+    Restangular.one('authenticate').customPOST($scope.formData).then(
+      function(success) {
+        console.log(success);
+
+        var rules = [
+          {
+            type: 'empty',
+            prompt: translation.tab_security_error_empty_code
+          }
+        ]
+
+        if (success.valid_tfa_code_required) rules.push({
+          type: 'contains[null]',
+          prompt: translation.tab_security_error_invalid_code
+        })
+
+        $scope.form_validation = {
+          code: {
+            identifier: 'code',
+            rules: rules
+          }
+        }
+    
+        $('#code-form').form($scope.form_validation, {
+          inline: true,
+          keyboardShortcuts: true,
+          onSuccess: function () {
+            $scope.onSubmitSuccess(success);
+          },
+          onFailure: function () {
+            rules.pop();
+          }
+        }).form('validate form');
+
+      }
+    )
+
+  }
+
+  $scope.onSubmitSuccess = function(success) {
+
+    console.log('post auth form data = ', $scope.formData);
+
+    var requires_tfa = success.valid_tfa_code_required;
+    if (requires_tfa) { //if the login endpoint demands tfa
+
+      $scope.openModal('enter-2fa');
+      
+    } else { //if the login is successful
+      // clear messages
+      $scope.formData.errors = null;
+      // success message
+      $rootScope.login_successful = {
+        message: "login_login_successful"
+      };
+      // translate login successful
+      $translate(['login_page_login_success']).then(function(value) {
+        $scope.login_message = value.login_page_login_success;
+      });
+      UserService.setLoggedIn(success); // Update loggedin status and user account info
+      if (success.person_type_id == 1){
+        Restangular.one('account/stripe/application').customGET("", {},
+          {
+              'X-Auth-Token': success.auth_token
+          }
+        ).then(function(success) {
+          var stripe_setting = success.plain();
+          var show_modal = false;
+
+          if (!stripe_setting.publishable_key || stripe_setting.publishable_key == "public_id_dummy") {
+              show_modal = true;
+          }
+
+          if (!stripe_setting.secret_key || stripe_setting.secret_key == "secret_key_dummy") {
+              show_modal = true;
+          }
+
+          $rootScope.loading = false;
+          $rootScope.login_successful = null;
+
+          if (show_modal){
+            $location.path('/admin/dashboard');
+            $location.hash('portal-settings');
+            $rootScope.showNewPlatformModal = true
+          }
+        });
+      }
+      $('.ui.modal').modal('hide');
+    }
+  }
+
   $scope.submit = function() {
+
     if ($scope.tos_login) {
       $scope.submit_once = true;
       if (!$('#login input[type="checkbox"]').is(':checked')) {
@@ -70,11 +185,11 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
 
     // clear messages
     $scope.formData.errors = null;
-    $scope.formData.successful = null;
+    $rootScope.login_successful = null;
     // set loading true
-    $scope.loading = true;
+    $rootScope.loading = true;
     // display message
-    $scope.formData.successful = {
+    $rootScope.login_successful = {
       "message": "login_logging_in"
     };
     $translate(['login_page_login_message']).then(function(value) {
@@ -91,50 +206,15 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
     if (auth_scheme.id == 2) {
       $scope.formData.password_scheme = "sha1";
     }
+
     Restangular.all('authenticate').post($scope.formData).then(
       function(success) {
-        // clear messages
-        $scope.formData.errors = null;
-        $scope.formData.successful = null;
-        // success message
-        $scope.formData.successful = {
-          message: "login_login_successful"
-        };
-        // translate login successful
-        $translate(['login_page_login_success']).then(function(value) {
-          $scope.login_message = value.login_page_login_success;
-        });
-        UserService.setLoggedIn(success); // Update loggedin status and user account info
-        if (success.person_type_id == 1){
-        Restangular.one('account/stripe/application').customGET("", {},
-          {
-              'X-Auth-Token': success.auth_token
-          }
-          ).then(function(success) {
-          var stripe_setting = success.plain();
-          var show_modal = false;
-
-          if (!stripe_setting.publishable_key || stripe_setting.publishable_key == "public_id_dummy") {
-              show_modal = true;
-          }
-
-          if (!stripe_setting.secret_key || stripe_setting.secret_key == "secret_key_dummy") {
-              show_modal = true;
-          }
-
-          if (show_modal){
-            $location.path('/admin/dashboard');
-            $location.hash('portal-settings');
-            $rootScope.showNewPlatformModal = true
-          }
-        });
-    }
-        $('.ui.modal').modal('hide');
+        $scope.onSubmitSuccess(success);
       },
       function(failure) { // If the login request fails, set the errors returned from the server
         // clear messages
         $scope.formData.errors = null;
-        $scope.formData.successful = null;
+        $rootScope.login_successful = null;
         $scope.formData.errors = failure.data.errors;
         $scope.formData.error_message = failure.data.message;
         $scope.str = $scope.formData.errors.credential_verification[0].code;
@@ -146,7 +226,7 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
         }
 
         // set loading false
-        $scope.loading = false;
+        $rootScope.loading = false;
       });
 
 
@@ -260,4 +340,19 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
       }
     }
   });
+
+  $scope.openModal = function (modalId, callback) {
+    var selector = $('.modal#' + modalId);
+    selector.modal({
+      closable: false,
+      onApprove: function () {
+        if (typeof callback == "function") {
+          callback();
+        }
+        return false;
+      }
+    }).modal('show');
+
+  };
+
 });

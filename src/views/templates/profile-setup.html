@@ -25,7 +25,8 @@
         </div>
 
         <form class="campaign-profile-form campaign-creation-form" name="profile_edit">
-          <div>
+          <div class="ui two column stackable formbg grid" ng-if="public_settings.site_verification.toggle && truliooEnabled" ng-controller="TruliooVerificationCtrl" ng-include src="'views/templates/trulioo-verification.html'"></div>
+
             <div class="campaign-bg ui basic segment" ng-if="!public_settings.site_campaign_enable_organization_name">
               <div class="formbg ui two column stackable grid optional-field">
                 <div class="five wide column">
@@ -88,7 +89,6 @@
                 </div>
               </div>
             </div>
-          </div>
 
           <!-- Start of user profile -->
           <div ng-show="campaign.profile_type_id === 1" class="ui form" id="user-profile-form">

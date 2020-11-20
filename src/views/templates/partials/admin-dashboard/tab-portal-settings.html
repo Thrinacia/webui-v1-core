@@ -367,7 +367,7 @@
               </div>
             </div>
           </div>
-
+<!-- 
           <div class="ui two column stackable setting-bg grid site-menu-setting">
             <div class="four wide column">
               <h3 class="ui header main-font-color" translate> tab_portalsetting_Website_Menu </h3>
@@ -477,7 +477,7 @@
 
               </div>
             </div>
-          </div>
+          </div> -->
 
           <div class="ui two column stackable setting-bg grid">
             <div class="four wide column">
@@ -1032,6 +1032,20 @@
     <div class="ui tab" data-tab="portal-settings/website-settings">
       <div id="website-settings" class="portal-settings-wrap">
         <div class="setting-content website-setting-content">
+          
+          <div class="ui two column stackable setting-bg grid">
+            <div class="four wide column">
+              <h3 class="ui header main-font-color" translate>tab_portalsetting_campaign_verification</h3>
+              <p translate>tab_portalsetting_campaign_verification_note</p>
+            </div>
+            <div class="twelve wide column">
+              <div class="ui toggle checkbox defaultForm" ng-model="public_settings.site_verification.toggle">
+                <input type="checkbox" name="public">
+                <label ng-show="public_settings.site_verification.toggle" translate>tab_portalsetting_campaign_verification_disable</label>
+                <label ng-show="!public_settings.site_verification.toggle" translate>tab_portalsetting_campaign_verification_enable</label>
+              </div>
+            </div>
+          </div>
 
           <div class="ui two column stackable setting-bg grid">
             <div class="four wide column">

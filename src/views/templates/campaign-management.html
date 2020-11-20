@@ -74,12 +74,12 @@
                 </div>
                 <div class="right-col five wide column">
                   <label class="label-status ui label" ng-class="{'teal':[2,4,5,6,8,9].indexOf(campaign.entry_status_id) > -1, 'blue':[1,10,12].indexOf(campaign.entry_status_id) > -1, 'red':[3,7,11,13].indexOf(campaign.entry_status_id) > -1}" title="{{campaign.entry_status | translate}}">
-										<i class="edit icon" ng-show="[1].indexOf(campaign.entry_status_id) > -1"></i>
-										<i class="time icon" ng-show="[5,8,10,12].indexOf(campaign.entry_status_id) > -1"></i>
-										<i class="checkmark icon" ng-show="[2,6,9].indexOf(campaign.entry_status_id) > -1"></i>
-										<i class="remove icon" ng-show="[3,7,11,13].indexOf(campaign.entry_status_id) > -1"></i>
-										<i class="pause icon" ng-show="[4].indexOf(campaign.entry_status_id) > -1"></i> {{campaign.entry_status | translate}}
-									</label>
+                    <i class="edit icon" ng-show="[1].indexOf(campaign.entry_status_id) > -1"></i>
+                    <i class="time icon" ng-show="[5,8,10,12].indexOf(campaign.entry_status_id) > -1"></i>
+                    <i class="checkmark icon" ng-show="[2,6,9].indexOf(campaign.entry_status_id) > -1"></i>
+                    <i class="remove icon" ng-show="[3,7,11,13].indexOf(campaign.entry_status_id) > -1"></i>
+                    <i class="pause icon" ng-show="[4].indexOf(campaign.entry_status_id) > -1"></i> {{campaign.entry_status | translate}}
+                  </label>
                 </div>
               </div>
 
@@ -127,7 +127,7 @@
                 </div>
                 <div class="meta campaign-fund-amount center aligned column">
                   <span class="stat-text" ng-if="!settings.master_progress_bar_hide">{{campaign.funded_amount / (campaign.funding_goal || 1) * 100 | number: 0}}%                            {{ 'campaign_management_pledged_funded' | translate}}
-									</span>
+                  </span>
                 </div>
                 <div class="meta campaign-created center aligned column">
                   <div ng-if="dateInPast(campaign.ends,campaign.seconds_remaining)" style="float:left;" translate="index_closed"></div>
@@ -226,23 +226,54 @@
 <div class="ui small modal extend-campaign-modal">
   <i class="close icon"></i>
   <div class="header">
-    <h3 class="ui blue large header" translate="campaign_management_extend_campaign_title"></h3>
+    <h3 class="ui header" translate="campaign_management_extend_campaign_title"></h3>
   </div>
   <div class="content">
     <div class="ui input grid">
-      <div class="ui sixteen wide column"><div class="ui large header">{{'campaign_management_extend_campaign_date_set_message' | translate}}</div></div>
-      <quick-datepicker class="ui ten wide column" ng-model="setEndDate" disable-clear-button="true" date-format='EEEE, yyyy/MM/d' date-filter="noPastDates" placeholder="{{'campaign_management_extend_campaign_end_date_placeholder' | translate}}" read-only="true"></quick-datepicker>
-      <div class="ui positive button four wide column" ng-click="setCampaignEndDate()" translate> campaign_management_extend_campaign_date_submit </div>
+      <div class="sixteen wide column start-date" id="start-date-field" >
+          <label> {{'get_started_funding_startdate'|translate}} ({{extendingCampaign.timezone_abbrev}})</label>
+          <quick-datepicker ng-class="{'startdate-selected' : extendingCampaign.starts_date_time}" ng-model="extendingCampaign.starts_date_time" disable-clear-button="true" date-format='EEEE, MMMM d, yyyy' placeholder="{{get_started_funding_startdate_placeholder}}" ></quick-datepicker>
+          <div class="disabled-overlay" ></div>
+      </div>
 
-      <div class="ui sixteen wide column"><div class="ui huge header center aligned">{{'campaign_management_extend_campaign_date_or_message' | translate}}</div></div>
+      <div class="eight wide column">
+        <label> {{'get_started_funding_numberdays' | translate}}</label>
+        <input class="ui ten wide column" type="text" name="runtime_days" ng-attr-placeholder="{{'get_started_funding_numberdays_placeholder' | translate}}" ng-model="extendingCampaign.runtime_days" ng-attr-value="extendingCampaign.runtime_days" 365-only onkeydown="if (event.keyCode == 13) return false;"
+          ng-disabled="enableCampaignRevisions && extendingCampaign.entry_status_id == 2  && user.person_type_id !== 1">
 
-      <div class="ui sixteen wide column"><div class="ui large header">{{'campaign_management_extend_campaign_date_extend_message' | translate}}</div></div>
-      <input class="ui ten wide column" type="text" name="runtime_days" ng-attr-placeholder="{{'campaign_management_extend_campaign_end_days_placeholder' | translate}}" ng-model="extendEndDays" 365-only onkeydown="if (event.keyCode == 13) return false;">
-      <div class="ui positive button four wide column" ng-click="extendCampaignEndDate()" translate> campaign_management_extend_campaign_date_submit </div>
+        <div>{{numberOfDays}}</div>
+      </div>
+      <div class="eight wide column">
+        <label translate>get_started_duration_Type </label>
+        <div class="ui fluid selection dropdown profile-type" ng-class="{'disabled' : enableCampaignRevisions && extendingCampaign.entry_status_id == 2 && user.person_type_id == 2}">
+          <div class="text" id="duration_dtext"> {{'get_started_selectone'|translate}}</div>
+          <i class="dropdown icon"></i>
+          <input type="hidden" name="profile-type" value="{{extendingCampaign.duration_type_id}}">
+          <div class="menu">
+            <div ng-repeat="type in duration_type" data-value="{{type.id}}" ng-click="durationTypeSelected(type.id)" class="item">{{type.type | translate}}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sixteen wide column end-date" id="end-date-field">
+        <label> {{'get_started_funding_enddate' |translate}} ({{extendingCampaign.timezone_abbrev}})</label>
+
+        <quick-datepicker ng-class="{'enddate-selected' : extendingCampaign.ends_date_time}" ng-model="extendingCampaign.ends_date_time" disable-clear-button="true" date-format='EEEE, MMMM d, yyyy' date-filter="noPastDates" placeholder="{{get_started_funding_enddate_placeholder}}"
+          read-only="true" ng-click="check();" disable-timepicker="{{enableCampaignRevisions && extendingCampaign.entry_status_id == 2 && user.person_type_id == 2}}"></quick-datepicker>
+
+        <div class="disabled-overlay" ng-show="enableCampaignRevisions && extendingCampaign.entry_status_id == 2 && user.person_type_id == 2"></div>
+      </div>
     </div>
+
   </div>
   <!-- CONTENT END -->
   <div class="actions">
+    <div class="ui positive button" ng-click="setCampaignEndDate()" translate>
+      campaign_management_extend_campaign_date_submit
+    </div>
+    <div class="ui negative button" translate>
+      campaign_management_extend_campaign_date_cancel
+    </div>
   </div>
 </div>
 <!-- End of extend campaign modal -->
@@ -301,8 +332,8 @@
           <div class="filed">
 
             <select ng-class="{'has-error': !campaign.category_id.length}" multiple ng-model="campaign.category_id" ui-select2="categorypicker">
-							<option value="{{category.category_id}}" class="item" ng-repeat="category in categories | orderBy:'display_priority'">{{category.name}}</option>
-						</select>
+              <option value="{{category.category_id}}" class="item" ng-repeat="category in categories | orderBy:'display_priority'">{{category.name}}</option>
+            </select>
             <!-- DROP DOWN END -->
             <div class="ui red pointing above ui label" ng-show="edit_campaign_form.city" required>
               <div ng-show="edit_camaign_form.city.$error.required" translate> campaign_management_edit_campaign_location_message </div>

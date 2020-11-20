@@ -8,15 +8,17 @@
 			<div class="ui page grid">
 				<div class="column">
 					<div class="ui pointing secondary menu menu-tabs">
-						<a class="item active" data-tab="reports" ng-click="clickHash('reports')" translate="portal_setting_reports"></a>
-						<a class="item" data-tab="users" ng-click="clickHash('users')" translate="portal_setting_user"></a>
-						<a class="item" data-tab="categories" ng-click="clickHash('categories')" translate="portal_setting_categories"></a>
-						<a class="item" data-tab="campaigns" ng-click="clickHash('campaigns')" translate="portal_setting_campaign"></a>
-						<a class="item" data-tab="coupons" ng-click="clickHash('coupons')" translate="portal_setting_coupon"></a>
-						<a class="item" data-tab="pages" ng-click="clickHash('pages')" translate="portal_setting_pages"></a>
-						<a class="item" data-tab="portal-settings" ng-click="clickHash('portal-settings')" translate="portal_setting_portal_setting"></a>
-						<a class="item" data-tab="web-settings" ng-click="clickHash('web-settings')" translate="portal_setting_webhook_setting"></a>
-						<a class="item" data-tab="subscription-settings" ng-click="clickHash('subscription-settings')" translate="portal_setting_subscription_settings_tab_label"></a>
+						<a class="item active" data-tab="reports" ng-click="clickHash('reports')" translate="portal_setting_reports">
+						<a ng-show="User.person_type_id == 1" class="item" data-tab="users" ng-click="clickHash('users')" translate="portal_setting_user"></a>
+						<a ng-show="User.person_type_id == 1" class="item" data-tab="categories" ng-click="clickHash('categories')" translate="portal_setting_categories"></a>
+						<a ng-show="User.person_type_id == 1" class="item" data-tab="site-menus" ng-click="clickHash('site-menus')" translate="portal_setting_menus"></a>
+						<a ng-show="(User.person_type_id == 1 || User.person_type_id == 3)" class="item" data-tab="campaigns" ng-click="clickHash('campaigns')" translate="portal_setting_campaign"></a>
+						<a ng-show="User.person_type_id == 1" class="item" data-tab="coupons" ng-click="clickHash('coupons')" translate="portal_setting_coupon"></a>
+						<a ng-show="(User.person_type_id == 1 || User.person_type_id == 4)" class="item" data-tab="pages" ng-click="clickHash('pages')" translate="portal_setting_pages"></a>
+						<a ng-show="User.person_type_id == 1" class="item" data-tab="portal-settings" ng-click="clickHash('portal-settings')" translate="portal_setting_portal_setting"></a>
+						<a ng-show="User.person_type_id == 1" class="item" data-tab="web-settings" ng-click="clickHash('web-settings')" translate="portal_setting_webhook_setting"></a>
+						<a ng-show="User.person_type_id == 1" class="item" data-tab="subscription-settings" ng-click="clickHash('subscription-settings')" translate="portal_setting_subscription_settings_tab_label"></a>
+
 					</div>
 				</div>
 			</div>
@@ -38,6 +40,11 @@
 			<div class="ui tab" data-tab="categories">
 				<div ng-if="showcategories">
 					<div class="menu-tab-content" ng-include src="'views/templates/partials/admin-dashboard/tab-categories.html'" ng-controller="AdminCategoriesCtrl"></div>
+				</div>
+			</div>
+			<div class="ui tab" data-tab="site-menus">
+				<div ng-if="showSiteMenus">
+					<div class="menu-tab-content" ng-include src="'views/templates/partials/admin-dashboard/tab-site-menus.html'" ng-controller="AdminSiteMenusCtrl"></div>
 				</div>
 			</div>
 			<div class="ui tab" data-tab="campaigns">

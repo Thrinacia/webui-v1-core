@@ -1,6 +1,8 @@
 app.controller('CampaignStepCtrl', function($location, CampaignSettingsService, Restangular, $routeParams, $scope, CreateCampaignService, PortalSettingsService, UserService, $rootScope) {
   // check the current path and set active class to the current step
   // campaign entry id is used in href
+  $scope.verified = false;
+
   var paras = $location.$$path.split('/');
   $scope.path = paras[1];
   $scope.campaign_entry_id = $routeParams.campaign_id;
@@ -203,14 +205,29 @@ app.controller('CampaignStepCtrl', function($location, CampaignSettingsService, 
       }
     }
   };
+  
+
 
   $scope.validateProfileStep = function() {
+    if (typeof $scope.public_settings.site_verification == "undefined") {
+      $scope.public_settings.site_verification = { toggle: false};
+    }
     // personal profile check
     if ($scope.campaign.profile_type_id === 1) {
-      return true;
+      if($scope.public_settings.site_verification.toggle){
+        // check for verified
+        return $rootScope.verified;
+      } else {
+        return true;
+      }
     } else {
       if ($scope.campaign.business_organizations && $scope.campaign.business_organizations.length) {
-        return true;
+        if($scope.public_settings.site_verification.toggle){
+          // check for verified
+          return $rootScope.verified;
+        } else {
+          return true;
+        }
       }
     }
   };

@@ -762,6 +762,8 @@
           <button type="button" ng-csv="campaigndata" filename="campaign.csv" add-bom="true" class="ui green button" id="csvbtn">{{'tab_campaign_details_export'|translate}}</button>
           <button type="button" ng-csv="createCampaignCSV()" lazy-load="true" filename="allcampaigns.csv" add-bom="true" class="ui green button" id="csvbtn">{{'tab_campaign_details_export_all'|translate}}</button>
           <button type="button" ng-csv="createCampaignCompleteCSV()" lazy-load="true" filename="allcampaignscomplete.csv" add-bom="true" class="ui green button" id="csvbtn">{{'tab_campaign_details_export_all_complete'|translate}}</button>
+          <button type="button" ng-csv="createTransactionCompleteCSV()" lazy-load="true" filename="alltransactions.csv" add-bom="true" class="ui green button" id="csvbtn">{{'tab_campaign_details_export_page_transactions'|translate}}</button>
+
           <div id="searchbox">
             <label> {{'tab_campaign_items_perpage' | translate}} </label>&nbsp;
             <div class="ui selection dropdown" id="searchbtn">
@@ -976,20 +978,45 @@
 <div class="ui small modal extend-campaign-modal">
   <i class="close icon"></i>
   <div class="header">
-    <h3 class="ui blue large header" translate="tab_campaign_extend_campaign_title"></h3>
+    <h3 class="ui header" translate="tab_campaign_extend_campaign_title"></h3>
   </div>
   <div class="content">
     <div class="ui input grid">
-      <div class="ui sixteen wide column"><div class="ui large header">{{'tab_campaign_extend_campaign_date_set_message' | translate}}</div></div>
-      <quick-datepicker class="ui ten wide column" ng-model="setEndDate" disable-clear-button="true" date-format='EEEE, yyyy/MM/d' date-filter="noPastDates" placeholder="{{'tab_campaign_extend_campaign_end_date_placeholder' | translate}}" read-only="true"></quick-datepicker>
-      <div class="ui positive button four wide column" ng-click="setCampaignEndDate()" translate> tab_campaign_extend_campaign_date_submit </div>
+      <div class="sixteen wide column start-date" id="start-date-field" >
+          <label> {{'get_started_funding_startdate'|translate}} ({{extendingCampaign.timezone_abbrev}})</label>
+          <quick-datepicker ng-class="{'startdate-selected' : extendingCampaign.starts_date_time}" ng-model="extendingCampaign.starts_date_time" disable-clear-button="true" date-format='EEEE, MMMM d, yyyy' placeholder="{{get_started_funding_startdate_placeholder}}" ></quick-datepicker>
+          <div class="disabled-overlay" ></div>
+      </div>
 
-      <div class="ui sixteen wide column"><div class="ui huge header center aligned">{{'tab_campaign_extend_campaign_date_or_message' | translate}}</div></div>
+      <div class="eight wide column">
+        <label> {{'get_started_funding_numberdays' | translate}}</label>
+        <input class="ui ten wide column" type="text" name="runtime_days" ng-attr-placeholder="{{'get_started_funding_numberdays_placeholder' | translate}}" ng-model="extendingCampaign.runtime_days" ng-attr-value="extendingCampaign.runtime_days" 365-only onkeydown="if (event.keyCode == 13) return false;"
+          ng-disabled="enableCampaignRevisions && extendingCampaign.entry_status_id == 2  && user.person_type_id !== 1">
 
-      <div class="ui sixteen wide column"><div class="ui large header">{{'tab_campaign_extend_campaign_date_extend_message' | translate}}</div></div>
-      <input class="ui ten wide column" type="text" name="runtime_days" ng-attr-placeholder="{{'tab_campaign_extend_campaign_end_days_placeholder' | translate}}" ng-model="extendEndDays" 365-only onkeydown="if (event.keyCode == 13) return false;">
-      <div class="ui positive button four wide column" ng-click="extendCampaignEndDate()" translate> tab_campaign_extend_campaign_date_submit </div>
+        <div>{{numberOfDays}}</div>
+      </div>
+      <div class="eight wide column">
+        <label translate>get_started_duration_Type </label>
+        <div class="ui fluid selection dropdown profile-type" ng-class="{'disabled' : enableCampaignRevisions && extendingCampaign.entry_status_id == 2 && user.person_type_id == 2}">
+          <div class="text" id="duration_dtext"> {{'get_started_selectone'|translate}}</div>
+          <i class="dropdown icon"></i>
+          <input type="hidden" name="profile-type" value="{{extendingCampaign.duration_type_id}}">
+          <div class="menu">
+            <div ng-repeat="type in duration_type" data-value="{{type.id}}" ng-click="durationTypeSelected(type.id)" class="item">{{type.type | translate}}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sixteen wide column end-date" id="end-date-field">
+        <label> {{'get_started_funding_enddate' |translate}} ({{extendingCampaign.timezone_abbrev}})</label>
+
+        <quick-datepicker ng-class="{'enddate-selected' : extendingCampaign.ends_date_time}" ng-model="extendingCampaign.ends_date_time" disable-clear-button="true" date-format='EEEE, MMMM d, yyyy' date-filter="noPastDates" placeholder="{{get_started_funding_enddate_placeholder}}"
+          read-only="true" ng-click="check();" disable-timepicker="{{enableCampaignRevisions && extendingCampaign.entry_status_id == 2 && user.person_type_id == 2}}"></quick-datepicker>
+
+        <div class="disabled-overlay" ng-show="enableCampaignRevisions && extendingCampaign.entry_status_id == 2 && user.person_type_id == 2"></div>
+      </div>
     </div>
+
   </div>
   <!-- CONTENT END -->
   <div class="actions">

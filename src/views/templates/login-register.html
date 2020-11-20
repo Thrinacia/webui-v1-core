@@ -32,7 +32,7 @@
             <div ng-show="!loginRedirectShow">
               <div class="top-head">
                 <h3 class="ui header" translate>login_page_login </h3>
-                <div ng-show="formData.successful" class="ui positive message" id="loginmessage">
+                <div ng-show="login_successful" class="ui positive message" id="loginmessage">
                   {{login_message}}
 
                 </div>
@@ -84,7 +84,7 @@
               <div class="top-head">
                 <h3 class="ui header"> {{'login_register_header' | translate}} {{$root.site_company}}? </h3>
                 <p translate> login_register_message </p>
-                <div ng-show="formData.successful && !formData.errors" class="ui success message">
+                <div ng-show="login_successful && !formData.errors" class="ui success message">
                   {{registration_processing}}
                 </div>
                 <div ng-show="formData.errors" class="ui negative message">
@@ -189,7 +189,7 @@
     <p translate> login_page_forgotpassword_modal_enter_email </p>
     <div class="ui form basic segment email">
       <div class="field">
-        <input type="text" name="email" placeholder="{{'login_page_forgotpassword_modal_enter_email_messgae' | translate}}" ng-model="account.email">
+        <input autocomplete="off" type="text" name="email" placeholder="{{'login_page_forgotpassword_modal_enter_email_messgae' | translate}}" ng-model="account.email">
       </div>
     </div>
   </div>
@@ -202,4 +202,37 @@
       login_page_resend_activation_link
     </div>
   </div>
+</div>
+
+<!--A NOTE TO FUTURE DEVS: when you specify the same controller twice it creates two instances
+of that controller, and the states will not be shared between each. This may explain why things you are
+trying to do are not taking effect.-->
+
+<!--enter 2fa code modal-->
+<div class="ui modal small" id="enter-2fa" ng-controller="LoginCtrl">
+	<i class="close icon" ng-click = "cancelSubmit()"></i>
+	<div class="header">
+		<h3 class="ui blue header" translate> tab_security_setting_enter_password_title  </h3>
+	</div>
+	<div class="content">
+		<p translate>tab_security_enter_code</p>
+		<form id = "code-form" class = "ui form">
+      <div class = "three fields">
+        <div class = "field">
+          <input ng-model="formData.code" name = "code" class = "ui" type = "text"></input>
+        </div>
+      </div>
+    </form>
+    <br>
+    <p translate>tab_security_recovery_explanation</p>
+    <strong><p translate>tab_security_recovery_explanation_emphasis</p></strong>
+	</div>
+	<div class="actions">
+		<div class="ui negative button" ng-click = "cancelSubmit()" translate>
+			tab_security_setting_cancel_setup
+		</div>
+		<div class="ui positive button" ng-click = "submitWithTFA()" translate>
+			tab_security_setting_continue
+		</div>
+	</div>
 </div>

@@ -53,5 +53,7 @@
   "contact_message_missing_last_name": "Please enter your last name",
   "contact_message_missing_body": "Please enter a message",
   "contact_message_missing_recipient": "Please a recipient",
-  "unsupported_browser_message": "This browser is not supported. Please copy the link below and open in a different browser"
+  "unsupported_browser_message": "This browser is not supported. Please copy the link below and open in a different browser",
+  "copy_link": "Copy Link",
+  "link_copied": "Link copied to clipboard!"
 }

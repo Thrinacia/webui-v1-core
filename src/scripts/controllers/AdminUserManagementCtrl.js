@@ -394,7 +394,7 @@ app.controller('AdminUsersCtrl', function ($scope, PortalSettingsService, $rootS
   }
 
   $scope.addUserValidation = function () {
-    var translation = $translate.instant(['tab_user_fname_message', 'tab_user_lname_message', 'tab_user_enter_email', 'tab_user_enter_validemail', 'tab_user_password_message', 'tab_user_confirm_password_message', 'tab_user_password_nomatch', 'tab_user_password_nomatch', 'tab_user_custom_field_empty', 'tab_user_custom_field_validate']);
+    var translation = $translate.instant(['tab_user_fname_message', 'tab_user_lname_message', 'tab_user_enter_email', 'tab_user_enter_validemail', 'tab_user_password_message', 'tab_user_password_error_message', 'tab_user_confirm_password_message', 'tab_user_password_nomatch', 'tab_user_password_nomatch', 'tab_user_custom_field_empty', 'tab_user_custom_field_validate']);
     $scope.form_validation = {
       first_name: {
         identifier: 'first_name',
@@ -425,6 +425,9 @@ app.controller('AdminUsersCtrl', function ($scope, PortalSettingsService, $rootS
         rules: [{
           type: 'empty',
           prompt: translation.tab_user_password_message
+        }, {
+          type: 'length[6]',
+          prompt: translation.tab_user_password_error_message
         }]
       },
       password_confirm: {
@@ -624,6 +627,9 @@ app.controller('AdminUsersCtrl', function ($scope, PortalSettingsService, $rootS
     // set status dropdown
     $('.person-status-dropdown').dropdown('set selected', person.person_status_id);
 
+    //set type dropdown
+    $('.person-type-id-dropdown').dropdown('set selected', person.person_type_id);
+
     $scope.userSectionTitle = "Edit User";
     $scope.userShown = true;
     if ($scope.formData.person_type_id == 1) {
@@ -657,11 +663,11 @@ app.controller('AdminUsersCtrl', function ($scope, PortalSettingsService, $rootS
       $rootScope.floatingMessage = msg;
 
       var id = $scope.formData.id;
-      if ($('#admin-box').checkbox('is checked')) {
-        $scope.formData.person_type_id = 1;
-      } else {
-        $scope.formData.person_type_id = 2;
-      }
+      // if ($('#admin-box').checkbox('is checked')) {
+      //   $scope.formData.person_type_id = 1;
+      // } else {
+      //   $scope.formData.person_type_id = 2;
+      // }
       if ($scope.payment_gateway == 1) {
         var data = {
           person_id: id,
@@ -795,6 +801,10 @@ app.controller('AdminUsersCtrl', function ($scope, PortalSettingsService, $rootS
     }
   }
 
+  $scope.setPersonTypeId = function(id){
+    $scope.formData.person_type_id = id;
+  }
+
   //add user button clicked
   $scope.addUser = function ($event) {
     $('.add-user-modal').modal({
@@ -924,11 +934,18 @@ app.controller('AdminUsersCtrl', function ($scope, PortalSettingsService, $rootS
           $scope.hideFloatingMessage();
         });
       }, function (failure) {
+        console.log(failure);
         msg = {
           'header': failure.data.message,
         }
         $rootScope.floatingMessage = msg;
         $scope.hideFloatingMessage();
+        if(failure.data.errors.email[0].code == 'register_invalid_email_exists'){
+          var email_error = failure.data.errors.email[0].message;
+          $('.email-error').html(email_error);
+        } else if($('.email-error').html() != ''){
+          $('.email-error').html('')
+        }
       });
 
     }
@@ -2376,7 +2393,7 @@ app.controller('UserAccountCtrl', function ($translate, $scope, UserService, Res
   };
 
   $scope.accountValidation = function () {
-    var translation = $translate.instant(['tab_account_setting_old_pw_error', 'tab_account_setting_pw_error', 'tab_account_setting_pw_match_error']);
+    var translation = $translate.instant(['tab_account_setting_old_pw_error', 'tab_account_setting_pw_error', 'tab_account_setting_pw_length_error', 'tab_account_setting_pw_error', 'tab_account_setting_pw_match_error']);
 
     $('.account-form.ui.form').form({
       current_password: {
@@ -2391,6 +2408,9 @@ app.controller('UserAccountCtrl', function ($translate, $scope, UserService, Res
         rules: [{
           type: 'empty',
           prompt: translation.tab_account_setting_pw_error
+        }, {
+          type: 'length[6]',
+          prompt: translation.tab_account_setting_pw_length_error
         }]
       },
       confirm_password: {

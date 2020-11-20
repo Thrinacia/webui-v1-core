@@ -122,7 +122,22 @@ app.controller('NavbarCtrl', function ($location, $route, $scope, $rootScope, Re
 
   }
 
-  // toggle mobile side bar
+  // submenu show on hover
+  $timeout(function () {
+    $('.menu-items .menu-dropdown').dropdown({
+      on: 'hover'
+    });
+  });
+
+  $scope.checkForSubMenu = function(page) {
+    if(page.hasOwnProperty('subpages')){
+      if(page.subpages.length > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+    // toggle mobile side bar
   $scope.closeMobileSidebar = function () {
     $('#mobile-sidebar').sidebar('hide');
     $('body').removeClass('mobile-sidebar-no-scroll');

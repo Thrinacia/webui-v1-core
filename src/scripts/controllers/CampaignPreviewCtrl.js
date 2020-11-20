@@ -958,6 +958,18 @@ app.controller('CampaignPreviewCtrl', function($timeout, $interval, $location, $
 
     var reqFieldsCheck, basicsReqField;
 
+    var truliooVerified = true;
+    
+    if (typeof $scope.public_settings.site_verification == "undefined") {
+      $scope.public_settings.site_verification = { toggle: false};
+    }
+
+    if($scope.public_settings.site_verification.toggle) {
+      if(!$rootScope.verified) {
+        truliooVerified = false;
+      }
+    }
+
     if ($scope.create) {
       if (!$('#creationCheck').checkbox('is checked')) {
         $scope.tos_not_checked = true;
@@ -993,17 +1005,19 @@ app.controller('CampaignPreviewCtrl', function($timeout, $interval, $location, $
       return;
     }
 
+ 
+    
     // Toggle check for campaign steps with hidden required fields
     if ($scope.hideCampaignBlurbField && $scope.hideCampaignCategoryField && $scope.hideCampaignImageField) {
-      reqFieldsCheck = (campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.funding_goal && campaign.currency_id && $scope.rewardsCheck && checkFunding()) ? true : false;
+      reqFieldsCheck = (truliooVerified && campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.funding_goal && campaign.currency_id && $scope.rewardsCheck && checkFunding()) ? true : false;
     } else if ($scope.hideCampaignImageField) {
-      reqFieldsCheck = (campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.blurb && campaign.categories && campaign.funding_goal && campaign.currency_id && campaign.description && $scope.rewardsCheck && checkFunding()) ? true : false;
+      reqFieldsCheck = (truliooVerified && campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.blurb && campaign.categories && campaign.funding_goal && campaign.currency_id && campaign.description && $scope.rewardsCheck && checkFunding()) ? true : false;
     } else if ($scope.hideCampaignBlurbField) {
-      reqFieldsCheck = (hasImage() && campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.funding_goal && campaign.currency_id && campaign.description && $scope.rewardsCheck && checkFunding()) ? true : false;
+      reqFieldsCheck = (truliooVerified && hasImage() && campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.funding_goal && campaign.currency_id && campaign.description && $scope.rewardsCheck && checkFunding()) ? true : false;
     } else if ($scope.hideCampaignCategoryField) {
-      reqFieldsCheck = (hasImage() && campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.blurb && campaign.funding_goal && campaign.currency_id && campaign.description && $scope.rewardsCheck && checkFunding()) ? true : false;
+      reqFieldsCheck = (truliooVerified && hasImage() && campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.blurb && campaign.funding_goal && campaign.currency_id && campaign.description && $scope.rewardsCheck && checkFunding()) ? true : false;
     } else {
-      reqFieldsCheck = (hasImage() && campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.blurb && campaign.categories && campaign.funding_goal && campaign.currency_id && (campaign.description || campaign.settings.bio_enable) && $scope.rewardsCheck && checkFunding()) ? true : false;
+      reqFieldsCheck = (truliooVerified && hasImage() && campaign.name && campaign.raise_mode_id && campaign.profile_type_id && campaign.blurb && campaign.categories && campaign.funding_goal && campaign.currency_id && (campaign.description || campaign.settings.bio_enable) && $scope.rewardsCheck && checkFunding()) ? true : false;
     } 
     if ((reqFieldsCheck)) {
       $scope.loadingText = true;
@@ -1085,6 +1099,10 @@ app.controller('CampaignPreviewCtrl', function($timeout, $interval, $location, $
           }
           if (!(campaign.stripe_account_id)) {
             steps.push(value.funding);
+          }
+
+          if (!truliooVerified) {
+            steps.push(value.uprofile);
           }
 
           if (steps.length > 0) {

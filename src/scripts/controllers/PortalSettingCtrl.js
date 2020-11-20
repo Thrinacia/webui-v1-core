@@ -139,6 +139,8 @@ app.controller('PortalSettingCtrl', function($location, $browser, $compile, $roo
     $scope.showcampaigns = true;
   } else if ($location.hash() == 'categories') {
     $scope.showcategories = true;
+  } else if ($location.hash() == 'site-menus') {
+    $scope.showSiteMenus = true;
   } else if ($location.hash() == 'coupons') {
     $scope.showcoupons = true;
   } else if ($location.hash() == 'users') {
@@ -181,6 +183,8 @@ app.controller('PortalSettingCtrl', function($location, $browser, $compile, $roo
       $scope.showusers = true;
     } else if (tabName == 'categories') {
       $scope.showcategories = true;
+    } else if (tabName == 'site-menus') {
+      $scope.showSiteMenus = true;
     } else if (tabName == 'campaigns') {
       $scope.showcampaigns = true;
     } else if (tabName == 'coupons') {
