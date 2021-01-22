@@ -78,7 +78,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
   $scope.subcategories = [];
   $scope.campaign_image = "";
   $scope.category_ids = [];
-  $scope.sub_category_ids = [];
+  $scope.sub_category_ids = {ids: []};
   $scope.city = {};
   $scope.user = UserService;
   // Prepare data caching for location filter
@@ -922,7 +922,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
   function preFillCategories(campaignCategories) {
     if (campaignCategories) {
       $scope.category_ids = [];
-      $scope.sub_category_ids = [];
+      $scope.sub_category_ids = { ids: []};
       var categoryIdsArray = [],
         subCategoryIdsArray = [];
       var campaignCategoriesCopy = angular.copy(campaignCategories);
@@ -934,7 +934,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
         }
       });
       $scope.category_ids = angular.copy(categoryIdsArray);
-      $scope.sub_category_ids = angular.copy(subCategoryIdsArray);
+      $scope.sub_category_ids.ids = angular.copy(subCategoryIdsArray);
       $timeout(function() {
         $("#category-field select").val($scope.category_ids).trigger("change")
       }, 0);
@@ -2108,7 +2108,7 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
         $scope.backUrl = "campaign-setup/" + $routeParams.campaign_id;
       } else {
         // re-assignment
-        $scope.campaign.category_id = $scope.category_ids.concat($scope.sub_category_ids);
+        $scope.campaign.category_id = $scope.category_ids.concat($scope.sub_category_ids.ids);
         if ($scope.runModeSelected != 2) {
           // Checking if it's object is necessary because if user doesn't touch date, it's grabbed directly from server as String
           // If user does modify date, then it's object and these functions related to Date will work
@@ -3443,13 +3443,13 @@ app.controller('CreateCampaignCtrl', function($q, $location, $routeParams, $root
         $scope.subcategories = angular.copy(subcategory_temp);
         // Manually prefill the data
         $timeout(function() {
-          $("#sub-category-field select").val($scope.sub_category_ids).trigger("change")
+          $("#sub-category-field select").val($scope.sub_category_ids.ids).trigger("change")
         }, 0);
       }
     }
   });
 
-  $scope.$watch('sub_category_ids', function(newValue, oldValue) {
+  $scope.$watch('sub_category_ids.ids', function(newValue, oldValue) {
     if (newValue != oldValue) {
       if ($('#sub-category-field .select2-choices li').hasClass('select2-search-choice')) {
         $('#sub-category-field .select-error').remove();

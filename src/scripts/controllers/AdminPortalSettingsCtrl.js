@@ -687,6 +687,10 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
           $scope.public_settings.site_verification = { toggle: false};
         }
 
+        if (typeof $scope.public_settings.social_login == "undefined") {
+          $scope.public_settings.social_login = { toggle: false};
+        }
+
         if (typeof $scope.public_settings.site_theme_sticky_menu == "undefined") {
           $scope.public_settings.site_theme_sticky_menu = false;
         }
@@ -1318,6 +1322,7 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
         site_campaign_country_ids: $scope.public_settings.site_campaign_country_ids,
         site_campaign_contributions: $scope.public_settings.site_campaign_contributions,
         site_campaign_contributions_instruction: $scope.public_settings.site_campaign_contributions_instruction,
+        site_campaign_strong_customer_auth: $scope.public_settings.site_campaign_strong_customer_auth,
         stripe_standard_mode: $scope.public_settings.stripe_standard_mode,
         stripe_express_mode: $scope.public_settings.stripe_express_mode,
       };
@@ -2036,6 +2041,22 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       }
     }
 
+    if($scope.public_settings.social_login && $scope.public_settings.social_login.toggle){
+      
+      if($scope.private_settings.social_login.okta_domain || $scope.private_settings.social_login.okta_clientId){
+        var translate = $translate.instant(['tab_portalsetting_campaign_missing_social_login_info']);
+        msg = {
+          'header': translate.tab_portalsetting_campaign_missing_social_logi_info
+        }
+        $rootScope.floatingMessage = msg;
+        $scope.hideFloatingMessage();
+        $scope.scrollTo('#socialLogin-options');
+        return;
+      }
+
+      console.log($scope.private_settings)
+    }
+
     //make sure all referralcandy data is integrated
     if ($scope.public_settings.site_campaign_referralcandy_analytics && $scope.public_settings.site_campaign_referralcandy_analytics.toggle) {
       if (!$scope.public_settings.site_campaign_referralcandy_analytics.id 
@@ -2213,10 +2234,18 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       site_campaign_campaign_toggle_disclaimer_text: $scope.public_settings.site_campaign_campaign_toggle_disclaimer_text,
 
     };
+
     var privateSettings = {
       site_hide_transaction_details_campaign_manager: $scope.private_settings.site_hide_transaction_details_campaign_manager,
-      site_campaign_referralcandy_analytics_secret: $scope.private_settings.site_campaign_referralcandy_analytics_secret
+      site_campaign_referralcandy_analytics_secret: $scope.private_settings.site_campaign_referralcandy_analytics_secret,
     }
+    if($scope.private_settings.social_login){
+      privateSettings.okta_domain = $scope.private_settings.social_login.okta_domain
+      privateSettings.otka_clientId = $scope.private_setting.social_login.otka_clientId
+      privateSettings.google_clientSecret = $scope.social_login.google_clientSecret
+      privateSettings.facebook_clientSecret = $scope.social_login.facebook_clientSecret  
+    }
+
     if (!$scope.public_settings.site_campaign_defaults.toggle) {
       $scope.public_settings.site_campaign_defaults.hide_fundraise = false;
     } else if ($scope.public_settings.site_campaign_defaults_runMode == 1) {
@@ -2524,7 +2553,8 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       site_search_explore: $scope.public_settings.site_search_explore,
       site_homepage_custom_html_block: $scope.public_settings.site_homepage_custom_html_block,
       site_footer_custom_html_block: $scope.public_settings.site_footer_custom_html_block,
-      site_search_explore: $scope.public_settings.site_search_explore
+      site_search_explore: $scope.public_settings.site_search_explore,
+      site_campaign_strong_customer_auth: $scope.public_settings.site_campaign_strong_customer_auth
     };
 
     if (typeof $scope.public_settings.site_home_page_text.main_banner !== "undefined") {
@@ -2844,6 +2874,7 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       site_disable_unsupported_browsers: $scope.public_settings.site_disable_unsupported_browsers,
       site_tipping: $scope.public_settings.site_tipping,
       site_verification: $scope.public_settings.site_verification,
+      social_login: $scope.public_settings.social_login,
       site_campaign_combine_amount_tip: $scope.public_settings.site_campaign_combine_amount_tip,
       site_tip_currency: $scope.public_settings.site_tip_currency
     };

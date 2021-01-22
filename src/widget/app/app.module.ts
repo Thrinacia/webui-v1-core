@@ -19,6 +19,7 @@ import { ProfileComponent } from "./components/modules/Profile.component";
 import { CampaignService } from "./service/Campaign.service";
 import { CookieService } from "./service/Cookie.service";
 import { StripeService } from "./service/Stripe.service";
+import { PledgeService } from "./service/Pledge.service";
 import { UserService } from "./service/User.service";
 import { UtilService } from "./service/Util.service";
 import { SettingsService } from "./service/Settings.service";
@@ -107,6 +108,7 @@ import 'rxjs/add/operator/map';
     UserService,
     CampaignService,
     StripeService,
+    PledgeService,
     CookieService,
     UtilService,
     SettingsService,

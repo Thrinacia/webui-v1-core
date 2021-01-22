@@ -2779,10 +2779,17 @@ i.circular.icon.fb-blue, i.circular.icon.twitter-blue, i.circular.icon.google-pl
 /*/////////////////////////////////////////////*/
 /* Retry Credit Card START*/
 /*/////////////////////////////////////////////*/
+#pledge-retry .mainbody-wrap {
+  min-height: 75vh; }
+
 .pledge-retry-wrap {
   border: 1px solid #dddddd;
   padding: 1rem;
   background: #fff; }
+  .pledge-retry-wrap .ui.grid.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center; }
   .pledge-retry-wrap .left-col .campaign-info-header .text-col .campaign-title {
     margin-top: 0; }
   .pledge-retry-wrap .left-col .reward-information .reward-header .left-col h3.reward-title {
@@ -4721,9 +4728,6 @@ body.loading .loader-modal {
   padding-left: 0.4rem;
   font-style: italic;
   font-weight: bold; }
-
-#retry-main-page-grid {
-  padding: 0 30%; }
 
 #retry-content {
   margin-top: 2rem; }

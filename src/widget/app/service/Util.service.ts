@@ -50,6 +50,20 @@ export class UtilService {
     return errorMessage;
   }
 
+  public static logPledgeError(error) {
+    let errorMessage: string;
+    let errorJson = error;
+    if (errorJson.errors) {
+      for (let prop in errorJson.errors) {
+        errorMessage = errorJson.errors[prop][0].message;
+        break;
+      }
+    } else {
+      errorMessage = errorJson.message;
+    }
+    return errorMessage;
+  }
+
   /**
   * Check if the attribute exists in the widget pre-set property
   * @param  {string}  attr      Attribute

@@ -33,8 +33,13 @@
 								<p>
 									{{'retry_card_updated_card_message' | translate}}
 									<span>(**** **** ****
-										{{failedContrib.last4}})</span>
-									{{'retry_card_updated_card_message1' | translate}}
+										{{failedContrib.last4}}).</span>
+								  <span ng-if="requiresAuthentication">
+										{{'retry_card_updated_card_message2' | translate}}
+									</span>
+								  <span ng-if="!requiresAuthentication">
+										{{'retry_card_updated_card_message1' | translate}}
+									</span>
 								</p>
 							</div>
 						</div>
@@ -45,66 +50,156 @@
 				<!-- UI GRID END -->
 				<div class="ui grid" id="retry-content">
 					<div class="column">
-						<div class="ui segment reward-information">
-							<div class="ui two column stackable grid reward-header">
-								<div class="eleven wide column left-col">
-									<h3 class="reward-title">{{failedContrib.pledge_level_name}}</h3>
-								</div>
+						<div class="ui grid centered">
+							<div class="ui ten wide column">
+								<div class="ui segment reward-information">
+									<div class="ui two column stackable grid reward-header">
+										<div class="eleven wide column left-col">
+											<h3 class="reward-title">{{failedContrib.pledge_level_name}}</h3>
+										</div>
 
-								<div class="right aligned five wide column right-col">
-									<div class="reward-value" ng-bind-html="failedContrib.pledge_level_amount | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></div>
-								</div>
-							</div>
-							<div class="reward-desc fr-view" html-render html="failedContrib.pledge_level_description"></div>
+										<div class="right aligned five wide column right-col">
+											<div class="reward-value" ng-bind-html="failedContrib.pledge_level_amount | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option"></div>
+										</div>
+									</div>
+									<div class="reward-desc fr-view" html-render html="failedContrib.pledge_level_description"></div>
 
-							<div class="your-contrib">
-								<span class="contrib-label" translate>
-									retry_card_your_contribution
-								</span>
-								<span class="contrib-amnt" ng-bind-html="failedContrib.amount | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option" ng-if="failedContrib"></span>
-								<span ng-if="!failedContrib">N/A</span>
-							</div>
-						</div>
-
-						<div class="ui divider" ng-if="failedContrib"></div>
-
-						<div class="existing_cards" ng-if="existedCards.length">
-							<div class="ui fluid selection dropdown" ng-click="hideNewCard()">
-								<input type="hidden" name="cards">
-								<div class="default text">
-									<span translate="retry_card_select_existing_card"></span>
-								</div>
-								<i class="dropdown icon"></i>
-								<div class="menu">
-									<div class="item" ng-repeat="card in existedCards" ng-click="setStripeCardId(card.stripe_account_card_id)">
-										<img src="images/cards/{{card.stripe_account_card_type}}.png"/>
-										<span ng-if="card.stripe_account_card_type_id == 1 || card.stripe_account_card_type_id == 3">**** **** ****
-											<span ng-bind="card.last4"></span>
-										</span>
-										<span ng-if="card.stripe_account_card_type_id == 2">**** ****** *<span ng-bind="card.last4"></span>
-										</span>
+									<div class="your-contrib">
+										<div class="ui grid">
+											<div class="ui five wide column">
+												<span class="contrib-label" translate>
+													retry_card_your_contribution
+												</span>
+											</div>
+											<div class="ui eleven wide column">
+												<span class="contrib-amnt" ng-bind-html="failedContrib.amount | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option" ng-if="failedContrib"></span>
+												<span ng-if="!failedContrib">N/A</span>
+											</div>
+										</div>
+									</div>
+									<div class="your-contrib" ng-if="failedContrib.amount_tip">
+										<div class="ui grid">
+											<div class="ui five wide column">
+												<span class="contrib-label" translate>
+													retry_card_your_contribution_tip
+												</span>
+											</div>
+											<div class="ui eleven wide column">
+												<span class="contrib-amnt" ng-bind-html="failedContrib.amount_tip | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option" ng-if="failedContrib"></span>
+												<span ng-if="!failedContrib">N/A</span>
+											</div>
+										</div>
+									</div>
+									<div class="your-contrib">
+										<div class="ui grid">
+											<div class="ui five wide column">
+												<strong>
+													<span class="contrib-label" translate>
+														retry_card_your_contribution_total
+													</span>
+												</strong>
+											</div>
+											<div class="ui eleven wide column">
+												<span class="contrib-amnt" ng-bind-html="failedContrib.amount_total | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option" ng-if="failedContrib"></span>
+												<span ng-if="!failedContrib">N/A</span>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
 						</div>
 
-						<div class="ui horizontal divider" ng-if="existedCards.length">
-							<span translate="retry_card_select_card_divider"></span>
-						</div>
-
-						<div class="ui center aligned basic segment" ng-if="existedCards.length">
-							<div class="ui green button" ng-click="toggleNewCard()">
-								<span translate="retry_card_create_new_card"></span>
+						<div class="ui grid centered">
+							<div class="ui three wide column">
+								<h3 class="ui header" translate>
+									retry_card_choose_action
+								</h3>
+							</div>
+							<div class="ui seven wide column">
+								<div class="ui fluid selection dropdown">
+									<input type="hidden" name="cards">
+									<div class="default text">
+										<span translate="retry_card_select_choose_one"></span>
+									</div>
+									<i class="dropdown icon"></i>
+									<div class="menu">
+										<div class="item" ng-click="selectMethod('authenticate')" ng-if="requiresAuthentication"><span translate>retry_card_select_authenticate_card</span> <span>**** **** ****
+												{{failedContrib.last4}}</span></div>
+										<div class="item" ng-click="selectMethod('existing')" ng-if="existedCards.length" translate>retry_card_select_existing_card</div>
+										<div class="item" ng-click="selectMethod('new')" translate>retry_card_select_new_card</div>
+									</div>
+								</div>
 							</div>
 						</div>
 
-						<div class="repledge-credit-card-form" ng-if="isAddingNewCard">
-							<ng-include src="'views/templates/partials/credit-card-wrap.html'" ng-if="failedContrib" ng-init="initStripePayment()"></ng-include>
-						</div>
-						<div class="ui checkbox " id="propagate">
-							<input type="checkbox">
-							<label translate>
-								retry_card_propagate_message</label>
+							<br>
+							<div class="ui grid centered">
+								<div class="ui three wide column">
+								</div>
+								<div class="ui seven wide column">
+									<div class="existing_cards" ng-if="existedCards.length && (method == 'existing')">
+										<div class="ui fluid selection dropdown" ng-click="hideNewCard()">
+											<input type="hidden" name="cards">
+											<div class="default text">
+												<span translate="retry_card_select_choose_one"></span>
+											</div>
+											<i class="dropdown icon"></i>
+											<div class="menu">
+												<div class="item" ng-repeat="card in existedCards" ng-click="setStripeCardId(card.stripe_account_card_id)">
+													<img src="images/cards/{{card.stripe_account_card_type}}.png"/>
+													<span ng-if="card.stripe_account_card_type_id == 1 || card.stripe_account_card_type_id == 3">**** **** ****
+														<span ng-bind="card.last4"></span>
+													</span>
+													<span ng-if="card.stripe_account_card_type_id == 2">**** ****** *<span ng-bind="card.last4"></span>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="ui grid centered">
+								<div class="ui three wide column">
+								</div>
+								<div class="ui seven wide column">
+									<div class="repledge-credit-card-form" ng-if="method == 'new'">
+										<!--ng-include src="'views/templates/partials/credit-card-wrap.html'" ng-if="failedContrib" ng-init="initStripePayment()"></ng-include-->
+										<form class="ui stripe-credit-card-form form stripe-elements-form" ng-init="initStripeElement()">
+											<div class="two fields" ng-show="guestOption == 3">
+												<div class="field">
+													<input type="text" name="namecard" placeholder="{{'pledge_campaign_name_on_card'| translate}}" ng-model="stripeExtraDetails.name">
+												</div>
+												<div class="field"></div>
+											</div>
+											<div class="two fields">
+												<div class="sixteen wide field">
+													<label translate> guest_contribution_payment_card_number </label>
+													<div id="card-number-element-wrap">
+														<i class="pf pf-credit-card" id="brand-icon"></i>
+													</div>
+													<div id="card-number-element"></div>
+												</div>
+												<div class="field"></div>
+											</div>
+
+											<div class="two fields">
+												<div class="eight wide field">
+													<label translate> guest_contribution_payment_card_expiry_date </label>
+													<div id="card-expiry-element"></div>
+												</div>
+												<div class="eight wide field">
+													<label id="cvc"> {{'guest_contribution_payment_cvc'| translate}}
+														<i class="info circle icon" data-content="{{'pledge_campaign_creditcard_cvc_note'| translate }}" sui-popup></i>
+													</label>
+													<div id="card-cvc-element"></div>
+												</div>
+											</div>
+
+											<div id="card-errors" role="alert"></div>
+										</form>
+									</div>
+							</div>
 						</div>
 
 						<div class="ui basic right aligned segment retry-btn" ng-if="failedContrib">
@@ -114,7 +209,7 @@
 							<div class="ui pointing right label green" ng-if="retrySuccess" translate>
 								retry_card_retry_message
 							</div>
-							<div class="ui green button" ng-click="saveCard()" id="retrypledge" translate>
+							<div class="ui green button" ng-click="submit()" id="retrypledge" translate>
 								retry_card_retry_button
 							</div>
 						</div>
@@ -162,6 +257,18 @@
 		<div class="ui button" ng-click="goto()" translate>
 			retry_card_wrong_account_cancel
 		</div>
+	</div>
+</div>
+<!-- MODAL END -->
+
+
+<!--modal for transaction not found -->
+<div class="ui modal" id="authentication-failed">
+	<div class="header">
+		<h3 class="ui red header" translate="retry_card_authentication_failed_title"></h3>
+	</div>
+	<div class="content">
+		<p translate="retry_card_authentication_failed_message"></p>
 	</div>
 </div>
 <!-- MODAL END -->

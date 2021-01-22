@@ -122,8 +122,8 @@
             <!-- </div> -->
             <div class="field" ng-show="campaignRewards" style="margin: 0;">
               <label>{{'tab_campaign_details_reward'|translate}}</label>
-              <div class="fields">
-                <div class="twelve wide field">
+              <div class="three fields">
+                <div class="seven wide field">
                   <div class="ui selection dropdown reward">
                     <div class="default text" translate="tab_campaign_details_reward"></div>
                     <i class="dropdown icon"></i>
@@ -132,12 +132,19 @@
                     </div>
                   </div>
                 </div>
-                <div class="four wide field">
+                <div class="six wide field" ng-show="selectedReward.coupon && selectedReward.coupon.length > 0">
+                  <div id = "coupon-code-input" class = "ui checkbox">
+                    <label>{{'tab_campaign_transaction_details_apply'|translate}} {{selectedReward.coupon[0].name}} ({{selectedReward.coupon[0].code}})</label>
+                    <input type="checkbox" name="coupon_code" ng-attr-placeholder="{{'tab_campaign_details_coupon'| translate}}">
+                  </div>
+                </div>
+                <div class = "three wide field">
                   <div class="ui button clearBtn" translate="tab_campaign_transaction_details_reward_clear" ng-click="clearReward()"></div>
                 </div>
               </div>
             </div>
             <div class="field" ng-if="tippingOptions.toggle">
+              <label>{{'tab_campaign_transaction_details_tip_amount'|translate}}</label>
               <div class="ui buttons tipping-options-selection" ng-if="(tippingOptions.toggle_dynamic && tippingOptions.toggle_tiers) || (tippingOptions.toggle_dynamic && tippingOptions.toggle_no_tip) || (tippingOptions.toggle_tiers && tippingOptions.toggle_no_tip)">
                   <div class="ui button" ng-class="{ 'green': selectedTipType == 'tiers' }" ng-if="tippingOptions.toggle_tiers" ng-click="tipTypeSelection('tiers')" translate>
                     pledge_campaign_choose_tip

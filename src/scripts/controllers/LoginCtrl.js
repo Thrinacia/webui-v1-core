@@ -29,6 +29,7 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
     $rootScope.loginRedirect = null;
     $scope.val = success;
     angular.forEach($scope.val, function(value) {
+
       if (value) {
         if (value.name === 'site_tos_login_ui') {
           $scope.tos_login = value.value;
@@ -44,6 +45,15 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
             $scope.loginRedirectShow = false;
           }
         }
+
+        // if(value.name === 'social_login'){
+        //   console.log('social login: '+ value.value['toggle'])
+        //   $scope.socialLogin = value.value['toggle']
+        // }
+
+        // if(value.name === ""){
+
+        // }
       }
     });
     $scope.isAccSetEnabled = $scope.isAccSetEnabled != undefined ? $scope.isAccSetEnabled : true;
@@ -57,6 +67,8 @@ app.controller('LoginCtrl', function($rootScope, $location, $scope, PortalSettin
   }
 
   // Check valid login id
+
+  $scope.socialLogin = false;
   $rootScope.checklogin = true;
   $scope.formData = {};
 

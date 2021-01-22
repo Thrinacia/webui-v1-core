@@ -31,6 +31,7 @@
   "Email_AlreadyUsed": "Provided email address has already been registered",
   "Account_Creation_failed": "Account creation failed",
   "Pledge_Success": "Thank you for your contribution",
+  "payment_failed": "Payment Failed",
   "Card_is_invalid": "Your credit card has been declined. Credit cards can be declined for many reasons, please contact your credit card issuing bank or institution to resolve this.",
   "card_declined": "Your credit card has been declined. Credit cards can be declined for many reasons, please contact your credit card issuing bank or institution to resolve this.",
   "incorrect_exp_month": " The exp_month parameter should be an integer ",

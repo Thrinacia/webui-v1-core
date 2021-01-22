@@ -1,4 +1,10 @@
-app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $scope, $filter, $translatePartialLoader, $translate, UserService, StripeService, $routeParams, Restangular, Geolocator, RESOURCE_REGIONS, PortalSettingsService, $timeout, $sce, PHONE_TYPE, LANG) {
+app.controller('InlineContributionCtrl', function(
+  $rootScope, $q, $location, $scope, 
+  $filter, $translatePartialLoader, $translate, UserService, 
+  StripeService, $routeParams, Restangular, Geolocator, 
+  RESOURCE_REGIONS, PortalSettingsService, $timeout, $sce, 
+  PHONE_TYPE, LANG, PledgeService
+  ) {
 
   var msg;
 
@@ -23,6 +29,18 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
   // grab rewards variation choice if set
   if ($routeParams.attr) {
     $scope.selectedRewardAttrs = $routeParams.attr;
+  }
+
+  var reject = function(error){
+    console.log(error);
+    $translate('pledge_failed').then(function(value) {
+      msg = {
+        'header': value
+      }
+      $rootScope.floatingMessage = msg;
+      $scope.hideFloatingMessage();
+    });
+    $('#finalpledge').removeClass('disabled');
   }
 
   $scope.phonetype = PHONE_TYPE;
@@ -206,6 +224,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
     $scope.displayCampaignDisclaimer = success.public_setting.site_campaign_campaign_toggle_disclaimer_text;
     $scope.forceAnonymousPledge = portal_settings.site_campaign_always_anonymous_contribution;
     $scope.combineTip = portal_settings.site_campaign_combine_amount_tip;
+    $scope.site_campaign_fee_direct_transaction = portal_settings.site_campaign_fee_direct_transaction;
+    $scope.stripe_standard_mode = portal_settings.stripe_standard_mode;
 
     if (typeof $scope.tippingOptions === 'undefined' || $scope.tippingOptions == null) {
       $scope.tippingOptions = { toggle: false };
@@ -1285,7 +1305,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
               personal_phone_number: $scope.person.number,
               occupation: $scope.person.occupation || '',
               employer: $scope.person.employer || '',
-              inline_token: $scope.registering_user.inline_token
+              inline_token: $scope.registering_user.inline_token,
+              use_sca: 1
             };
 
             if ($scope.tippingOptions.toggle) {
@@ -1310,9 +1331,11 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
                 amount: $scope.totalAmount,
                 inline_token: $scope.registering_user.inline_token,
                 anonymous_contribution: $scope.anonymous_contribution,
-                anonymous_contribution_partial: $scope.partial_anonymous_contribution
+                anonymous_contribution_partial: $scope.partial_anonymous_contribution,
+                use_sca: 1
               };
-              Restangular.one('campaign', $scope.campaign_id).one('pledge').customPOST(infoPledge).then(function(success) {
+              PledgeService.makePledge(infoPledge, $scope.campaign_id, $scope.stripe_pledge, $scope.stripe_tip).then(function(success){
+                $scope.tip.dollar_amount = parseFloat(success.amount_tip).toFixed(2);
                 // $scope.responseMsg = "Pledge Successful";
                 // $translate('Pledge_Success').then(function(value) {
                 //   $scope.responseMsg = value;
@@ -1344,7 +1367,6 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
                 if ($scope.public_settings.site_campaign_referralcandy_analytics && $scope.public_settings.site_campaign_referralcandy_analytics.toggle) {
                   sendRCTransaction(success, $scope.public_settings.site_campaign_referralcandy_analytics.id);
                 }
-
               }, function(failed) {
                 $('#finalpledge').removeClass('disabled');
               });
@@ -1538,7 +1560,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
               employer: $scope.person.employer || '',
               inline_token: $scope.registering_user.inline_token,
               anonymous_contribution: $scope.anonymous_contribution,
-              anonymous_contribution_partial: $scope.partial_anonymous_contribution
+              anonymous_contribution_partial: $scope.partial_anonymous_contribution,
+              use_sca: 1
             };
 
             if ($scope.tippingOptions.toggle) {
@@ -1563,9 +1586,11 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
                 amount: $scope.totalAmount,
                 inline_token: $scope.registering_user.inline_token,
                 anonymous_contribution: $scope.anonymous_contribution,
-                anonymous_contribution_partial: $scope.partial_anonymous_contribution
+                anonymous_contribution_partial: $scope.partial_anonymous_contribution,
+                use_sca: 1
               };
-              Restangular.one('campaign', $scope.campaign_id).one('pledge').customPOST(infoPledge).then(function(success) {
+              PledgeService.makePledge(infoPledge, $scope.campaign_id, $scope.stripe_pledge, $scope.stripe_tip).then(function(success){
+                $scope.tip.dollar_amount = parseFloat(success.amount_tip).toFixed(2);
                 // $scope.responseMsg = "Pledge Successful";
                 // $translate('Pledge_Success').then(function(value) {
                 //   $scope.responseMsg = value;
@@ -1600,7 +1625,6 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
                     $scope.express.lname,
                     $scope.express.email);
                 }
-
               }, function(failed) {
                 $('#finalpledge').removeClass('disabled');
               });
@@ -1693,7 +1717,11 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
     if ($scope.selecteContributionAnon) {
       $scope.selecteContribution = 2;
     }
-    
+    $scope.stripe_pledge = $scope.stripe
+    $scope.stripe_tip = $scope.stripe;
+    if(!$scope.site_campaign_fee_direct_transaction && $scope.stripe_standard_mode && $scope.campaign.managers[0] && $scope.campaign.managers[0].publishable_key){
+      $scope.stripe_pledge = Stripe($scope.campaign.managers[0].publishable_key);
+    }
     // variable to store all attribute values
     var pledgeAttributes = {};
 
@@ -1803,7 +1831,7 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
 
         $scope.stripe.createToken($scope.cardNumberElement, $scope.stripeExtraDetails).then(function(result) {
           if (result.error) {
-            Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
+            //Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
 
             $timeout(function() {
               $rootScope.removeFloatingMessage();
@@ -1992,7 +2020,7 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
 
             $scope.stripe.createToken($scope.cardNumberElement, $scope.stripeExtraDetails).then(function(result) {
               if (result.error) {
-                Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
+                //Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
 
                 $timeout(function() {
                   $rootScope.removeFloatingMessage();
@@ -2160,7 +2188,7 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
 
             $scope.stripe.createToken($scope.cardNumberElement, $scope.stripeExtraDetails).then(function(result) {
               if (result.error) {
-                Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
+                //Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
 
                 $timeout(function() {
                   $rootScope.removeFloatingMessage();
@@ -2249,7 +2277,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
         pledge_level_id: $scope.pledgeLevel,
         amount: $scope.totalAmount,
         shipping_address_id: $scope.selectedAddressID || '',
-        attributes: JSON.stringify(pledgeAttributes)
+        attributes: JSON.stringify(pledgeAttributes),
+        use_sca: 1
       };
 
       if ($scope.tippingOptions.toggle) {
@@ -2270,7 +2299,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
       }
 
       // submit pledge
-      Restangular.one('campaign', $scope.campaign_id).one('pledge').customPOST(pledgeInfo).then(function(success) {
+      PledgeService.makePledge(pledgeInfo, $scope.campaign_id, $scope.stripe_pledge, $scope.stripe_tip).then(function(success){
+        $scope.tip.dollar_amount = parseFloat(success.amount_tip).toFixed(2);
         // thank you message
         $translate('Pledge_Success').then(function(value) {
           msg = {
@@ -2312,7 +2342,6 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
             $scope.express.lname,
             $scope.express.email);
         }
-
       }, function(failed) {
         $('#pledgebutton').removeClass('disabled');
         errorHandling(failed);
@@ -2362,7 +2391,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
         email: $scope.creditCard.email,
         last_name: $scope.creditCard.last_name,
         first_name: $scope.creditCard.first_name,
-        attributes: JSON.stringify(pledgeAttributes)
+        attributes: JSON.stringify(pledgeAttributes),
+        use_sca: 1
       };
 
       if ($scope.contributionMessage) {
@@ -2383,7 +2413,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
       }
 
       // submit pledge
-      Restangular.one('campaign', $scope.campaign_id).one('pledge/guest').customPOST(pledgeInfo).then(function(success) {
+      PledgeService.makePledge(pledgeInfo, $scope.campaign_id, $scope.stripe_pledge, $scope.stripe_tip).then(function(success){
+        $scope.tip.dollar_amount = parseFloat(success.amount_tip).toFixed(2);
         $translate('Pledge_Success').then(function(value) {
           msg = {
             'header': value
@@ -2480,7 +2511,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
         inline_token: $scope.registering_user.inline_token,
         anonymous_contribution: $scope.anonymous_contribution,
         anonymous_contribution_partial: $scope.partial_anonymous_contribution,
-        attributes: JSON.stringify(pledgeAttributes)
+        attributes: JSON.stringify(pledgeAttributes),
+        use_sca: 1
       };
       if ($scope.acceptExtraPledgeData && ($scope.selectAccountCaptureType == 2)) {
         if (businessData) {
@@ -2507,7 +2539,8 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
         data.coupon_code = $scope.currentCoupon.code;
       }
 
-      Restangular.one('campaign', $scope.campaign_id).one('pledge').customPOST(data).then(function(success) {
+      PledgeService.makePledge(data, $scope.campaign_id, $scope.stripe_pledge, $scope.stripe_tip).then(function(success){
+        $scope.tip.dollar_amount = parseFloat(success.amount_tip).toFixed(2);
         // thank you message
         $translate(['guest_contribution_thankyou_message']).then(function(value) {
           msg = {
@@ -2551,10 +2584,11 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
             window.location.href = $scope.site_campaign_pledge_redirect.url;
           }, 5000);
         }
+
       }, function(failed) {
 
         if ($scope.guestOption == 2 || $scope.guestOption == 4) {
-          Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
+          //Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
         }
         // when failed to create campaign pledge record
         $('#pledgebutton').removeClass('disabled');
@@ -2570,7 +2604,7 @@ app.controller('InlineContributionCtrl', function($rootScope, $q, $location, $sc
     }, function(failed) {
 
       if ($scope.guestOption == 2 || $scope.guestOption == 4) {
-        Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
+        //Restangular.one('account/person-inline-disable').customPUT({ person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token });
       }
 
       // when stripe failed to create new pledger account

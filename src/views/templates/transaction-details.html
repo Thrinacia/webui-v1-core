@@ -89,7 +89,7 @@
 							  <th translate> transaction_details_transaction_id</th>
 								<th translate> transaction_details_reward </th>
 								<th translate>  transaction_details_amount </th>
-
+								<th translate> tab_campaign_transaction_details_coupon</th>
 								<th translate> transaction_details_contributors</th>
 								<th translate> transaction_details_contributors_email</th>
 								<th translate> transaction_details_card_number</th>
@@ -114,7 +114,8 @@
 								 <span ng-hide="trans.backer[0].pledge_level.length"> {{'transaction_details_na' | translate}} </span>
 								</td>
 								<td ng-bind-html="trans.backer[0].amount | formatCurrency:campaign.currencies[0].code_iso4217_alpha:public_setting.site_campaign_decimal_option" ></td>
-
+								<td ng-if="trans.coupon && trans.coupon.length > 0">{{trans.coupon[0].code}}</td>
+								<td ng-if="!(trans.coupon && trans.coupon.length > 0)">-</td>
 								<td> <span ng-if="trans.backer.length &&  trans.backer[0].person.length" title="{{trans.backer[0].person[0].first_name +''+ trans.backer[0].person[0].last_name}}">{{(trans.backer[0].person[0].first_name +" "+ trans.backer[0].person[0].last_name).slice(0,18)}} </span>
 								<span ng-show="(trans.backer[0].person[0].first_name + trans.backer[0].person[0].last_name).length>18">&nbsp;...</span>
 

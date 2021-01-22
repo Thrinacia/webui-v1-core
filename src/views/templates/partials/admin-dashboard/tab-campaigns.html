@@ -829,6 +829,7 @@
               <th translate> tab_campaign_transaction_details_transaction_id</th>
               <th translate> tab_campaign_transaction_details_reward </th>
               <th translate> tab_campaign_transaction_details_amount </th>
+              <th translate> tab_campaign_transaction_details_coupon </th>
               <th translate ng-if="tippingOptions.toggle"> tab_campaign_transaction_details_tip_amount </th>
               <th translate>tab_campaign_transaction_details_contributors</th>
               <th translate> tab_campaign_transaction_details_contributors_email</th>
@@ -872,6 +873,11 @@
                     <i class="ui icon checkmark"></i>
                   </div>
                 </div>
+              </td>
+
+              <td>
+                <div ng-show = "trans.coupon && trans.coupon.length > 0">{{trans.coupon[0].code}}</div>
+                <div ng-show = "!(trans.coupon && trans.coupon.length > 0)">-</div>
               </td>
 
               <td ng-if="tippingOptions.toggle" class="tipping-amount-td">

@@ -1350,6 +1350,10 @@ app.controller('UserProfileCtrl', function($q, $route, $routeParams, $rootScope,
             if (typeof $scope.public_settings.site_verification == "undefined") {
               $scope.public_settings.site_verification = { toggle: false};
             }
+            
+            if (typeof $scope.public_settings.social_login == "undefined") {
+              $scope.public_settings.social_login = { toggle: false};
+            }
 
             $scope.address.person_id = paramID.person_id;
             if (!$scope.paddress_present) {

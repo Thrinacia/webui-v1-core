@@ -2002,11 +2002,20 @@
 /* Retry Credit Card START*/
 
 /*/////////////////////////////////////////////*/
+#pledge-retry .mainbody-wrap{
+  min-height: 75vh;
+}
 
 .pledge-retry-wrap {
   border: $main-border;
   padding: 1rem;
   background: #fff;
+
+  .ui.grid.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
   .left-col {
     .campaign-info-header {
@@ -5660,10 +5669,6 @@ body.loading .loader-modal {
   padding-left: 0.4rem;
   font-style: italic;
   font-weight: bold;
-}
-
-#retry-main-page-grid {
-  padding: 0 30%;
 }
 
 #retry-content {

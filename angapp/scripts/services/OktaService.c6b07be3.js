@@ -1,0 +1,1 @@
+app.service("OktaService",["$location","$http","APIRegister","Restangular","$timeout",function($location,$http,APIRegister,Restangular,$timeout){}]);

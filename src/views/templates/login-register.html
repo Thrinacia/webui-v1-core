@@ -70,6 +70,13 @@
               <div class="ui basic login-register-btn segment">
                 <button class="ui fluid login submit button" ng-class="{'loading disabled': loading}" id="loginButton" translate>login_page_buttontext </button>
               </div>
+
+              <div class="ui basic segment" ng-if="socialLogin">
+                <div id="okta-login-container" ng-if=""> 
+                  <!-- <button ng-click="login()" ng-show="!widget">Login</button>
+                  <div id="okta-login-container"></div> -->
+                </div>
+              </div>
             </div>
           </div>
 

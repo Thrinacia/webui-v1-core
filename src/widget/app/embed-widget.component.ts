@@ -9,6 +9,7 @@ import { Http, Headers, RequestOptions } from "@angular/http";
 import { UserService } from "./service/User.service";
 import { CampaignService } from "./service/Campaign.service";
 import { StripeService } from "./service/Stripe.service";
+import { PledgeService } from "./service/Pledge.service";
 import { CookieService } from "./service/Cookie.service";
 import { UtilService } from "./service/Util.service";
 import { ScriptService } from "./service/Script.service";
@@ -53,6 +54,7 @@ export class AppComponent implements OnInit {
   CONTRIBUTION_TYPE_EXPRESS: string = "express";
   mCampaignService: CampaignService;
   mStripeService: StripeService;
+  mPledgeService: PledgeService;
   mUserService: UserService;
   mSettingsService: SettingsService;
   mCampaign: any;
@@ -274,6 +276,7 @@ export class AppComponent implements OnInit {
 
   stripeTokenOn: Boolean = false;
   stripePublicKey: String = '';
+  stripeCampaignPublicKey: String = '';
   stripeElement: StripeElement;
   extraStripeDetails: Object = {
     address_city: '',
@@ -301,7 +304,7 @@ export class AppComponent implements OnInit {
     toggle: false
   };
 
-  constructor( @Inject(CampaignService) campaignService: CampaignService, @Inject(TranslationService) private translationService: TranslationService, @Inject(UserService) userService: UserService, @Inject(StripeService) stripeService: StripeService, @Inject(SettingsService) settingsService: SettingsService, private elementRef: ElementRef, private domSanitization: DomSanitizer, private http: Http, private cPipe: CurrencyPipe, private dPipe: DecimalPipe, private sPipe:CurrencySymbolNumberPipe) {
+  constructor( @Inject(CampaignService) campaignService: CampaignService, @Inject(TranslationService) private translationService: TranslationService, @Inject(UserService) userService: UserService, @Inject(StripeService) stripeService: StripeService, @Inject(PledgeService) pledgeService: PledgeService, @Inject(SettingsService) settingsService: SettingsService, private elementRef: ElementRef, private domSanitization: DomSanitizer, private http: Http, private cPipe: CurrencyPipe, private dPipe: DecimalPipe, private sPipe:CurrencySymbolNumberPipe) {
     
     //getting new Default and preferred lang
     if (window["widgetHost"] && window["DefaultPreferredLang"]) {
@@ -320,6 +323,7 @@ export class AppComponent implements OnInit {
       this.isContributionView = false;
       this.mCampaignService = campaignService;
       this.mStripeService = stripeService;
+      this.mPledgeService = pledgeService;
       this.mSettingsService = settingsService;
       this.elementRef = elementRef;
       this.mUserService = userService;
@@ -2496,10 +2500,15 @@ export class AppComponent implements OnInit {
   }
 
   pledge() {
-    console.log("pledge "+this.contributionType);
-    console.log(this.pledgeParam);
-    this.mCampaignService.pledge(ConstantsGlobal.CAMPAIGN_ID, this.pledgeParam).subscribe(
-      res => {
+    let stripe_pledge = this.stripeElement.getStripe();
+    let stripe_tip = this.stripeElement.getStripe();
+    if(!this.siteSettings["site_campaign_fee_direct_transaction"] && this.siteSettings["stripe_standard_mode"] && this.mCampaign.managers[0] && this.mCampaign.managers[0].publishable_key){
+      stripe_pledge = Stripe(this.mCampaign.managers[0].publishable_key);
+    }
+  
+    this.mPledgeService.pledge(this.pledgeParam, ConstantsGlobal.CAMPAIGN_ID, stripe_pledge, stripe_tip).then(
+      success => {
+        let res: any = success;
         if (typeof this.stripeElement.cardNumber !== 'undefined' && this.stripeElement.toggle) {
           this.stripeElement.clearElements();
         }
@@ -2632,7 +2641,7 @@ export class AppComponent implements OnInit {
 
   pledgeError(error: any) {
     this.isContributionSubmitting = false;
-    this.submitErrorMessage = UtilService.logError(error);
+    this.submitErrorMessage = UtilService.logPledgeError(error);
   }
 
   loadGoogleAnalytics(gaId: string) {
@@ -3180,7 +3189,10 @@ export class AppComponent implements OnInit {
   }
 
   total() {
-    var total = this.totalAmount;
+    let tip = this.tip ? parseFloat(this.tip.value) : 0;
+    let contrib = this.totalAmount;
+    let total = tip+contrib
+    //var total: number = this.tip ? parseFloat(this.totalAmount+this.tip.value) : this.totalAmount;
     return total;
   }
 
@@ -3209,7 +3221,7 @@ export class AppComponent implements OnInit {
     //   return parseFloat(a.dollar_amount) - parseFloat(b.dollar_amount);
     // });
 
-    if(!this.siteSettings["site_campaign_combine_amount_tip"]) {
+    if(this.siteSettings["site_campaign_combine_amount_tip"]) {
       this.tippingOptions.tiers.forEach((value, index) => {
         if(value.type == "Percent" && (value.dollar_amount < this.lowestAmount)) {
           value.dollar_amount += this.lowestAmount;

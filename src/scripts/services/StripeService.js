@@ -50,8 +50,12 @@ app.service('StripeService', function($location, $http, APIRegister, Restangular
    */
 
   //retrieve pledger stripe account
-  stripe.getPledgerAccount = function() {
-    return Restangular.one('account/stripe').customGET();
+  stripe.getPledgerAccount = function(retry_pledge_token) {
+    var params = {};
+    if(retry_pledge_token){
+      params.retry_pledge_token = retry_pledge_token;
+    }
+    return Restangular.one('account/stripe').customGET("", params);
   }
 
   //create new pledger stripe account with card information
@@ -87,6 +91,41 @@ app.service('StripeService', function($location, $http, APIRegister, Restangular
   // get all the cards associated to the account
   stripe.getCards = function(accountID) {
     return Restangular.one('account/stripe', accountID).one('card').customGET();
+  }
+  
+  stripe.setBrandIcon = function (brand, cardBrandToPfClass) {
+    var brandIconElement = document.getElementById('brand-icon');
+    var pfClass = 'pf-credit-card';
+    if (brand in cardBrandToPfClass) {
+      pfClass = cardBrandToPfClass[brand];
+      switch (brand) {
+        case "visa":
+          $('#brand-icon').css("background-image", "url(images/cards/Visa.png)");
+          break;
+        case "mastercard":
+          $('#brand-icon').css("background-image", "url(images/cards/MasterCard.png)");
+          break;
+        case "amex":
+          $('#brand-icon').css("background-image", "url(images/cards/American%20Express.png)");
+          break;
+        case "dinersclub":
+          $('#brand-icon').css("background-image", "url(images/cards/diners.png)");
+          break;
+        case "discover":
+          $('#brand-icon').css("background-image", "url(images/cards/Discover.png)");
+          break;
+        case "jcb":
+          $('#brand-icon').css("background-image", "url(images/cards/jcb.png)");
+          break;
+        default:
+          $('#brand-icon').css("background-image", "url(images/cards/default-credit-card-icon.png)");
+      }
+    }
+    for (var i = brandIconElement.classList.length - 1; i >= 0; i--) {
+      brandIconElement.classList.remove(brandIconElement.classList[i]);
+    }
+    brandIconElement.classList.add('pf');
+    brandIconElement.classList.add(pfClass);
   }
 
   // copy function

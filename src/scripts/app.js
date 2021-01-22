@@ -738,7 +738,7 @@ app.controller('MainCtrl', ['$scope', '$location', 'UserService', 'Restangular',
       // if user is not loggin, make them login when they want to create a new campaign
       if (!User.isLoggedIn()) {
         redirectService.setUrl(oldValue);
-        if (url == "start" || url == "pledge-campaign" || url == "message-center" || url == 'profile-setting' || url == 'payment-setting' || url == 'admin' || url == 'campaign-manager' || url == 'pledge-history' || url == 'getstarted' || url == 'campaign-setup' || url == 'rewards' || url == 'profile-setup' || url == 'complete-funding' || url == 'campaign-preview' || url == 'account' || url == 'pledge-retry') {
+        if (url == "start" || url == "pledge-campaign" || url == "message-center" || url == 'profile-setting' || url == 'payment-setting' || url == 'admin' || url == 'campaign-manager' || url == 'pledge-history' || url == 'getstarted' || url == 'campaign-setup' || url == 'rewards' || url == 'profile-setup' || url == 'complete-funding' || url == 'campaign-preview' || url == 'account') {
           $location.path('/login');
         }
       } else {

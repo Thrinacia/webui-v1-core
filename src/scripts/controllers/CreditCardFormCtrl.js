@@ -8,7 +8,7 @@ app.controller('CreditCardFormCtrl', function($scope, $translate, PortalSettings
     var translationCardName = translations.credit_card_form_card_name;
 
 
-    if ($scope.site_stripe_tokenization_settings.toggle) {
+    if ($scope.site_stripe_tokenization_settings && $scope.site_stripe_tokenization_settings.toggle) {
       $('#credit-card-info').form({
         card_number: {
           identifier: 'cardnumber',

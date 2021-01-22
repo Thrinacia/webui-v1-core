@@ -1430,7 +1430,7 @@ app.controller('CampaignCtrl', function($timeout, $http, $element, $anchorScroll
   $scope.miniContributeReward = function() {
     if (!$scope.enabledContribution) {
       $(".ui.modal.contribution-instruction").modal("show");
-    } else if ($scope.enabledContrubitionRewardsPopup) {
+    } else if ($scope.enabledContrubitionRewardsPopup && $scope.campaign.pledges) {
       $(".ui.modal.rewards-popup-modal").modal("show");
     } else if (UserService.isLoggedIn() || guestContribDisabled) {
       // also if guest contribution is disabled, go to this page(force login)

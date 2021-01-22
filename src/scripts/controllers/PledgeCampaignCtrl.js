@@ -1,4 +1,11 @@
-app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope, $filter, UserService, StripeService, $translate, $translatePartialLoader, $routeParams, Restangular, Geolocator, RESOURCE_REGIONS, $window, DisqusShortnameService, RestFullResponse, API_URL, PortalSettingsService, $http, $sce, $timeout, PHONE_TYPE, LANG, SOCIAL_SHARING_OPTIONS) {
+app.controller('PledgeCampaignCtrl', function(
+  $q, $location, $rootScope, $scope, $filter, 
+  UserService, StripeService, PledgeService, $translate, 
+  $translatePartialLoader, $routeParams, Restangular, Geolocator,
+  RESOURCE_REGIONS, $window, DisqusShortnameService, RestFullResponse,
+  API_URL, PortalSettingsService, $http, $sce,
+  $timeout, PHONE_TYPE, LANG, SOCIAL_SHARING_OPTIONS
+  ) {
 
   var msg;
 
@@ -223,6 +230,8 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
     $scope.displayCampaignDisclaimer = success.public_setting.site_campaign_campaign_toggle_disclaimer_text;
     $scope.forceAnonymousPledge = portal_settings.site_campaign_always_anonymous_contribution;
     $scope.combineTip = portal_settings.site_campaign_combine_amount_tip;
+    $scope.site_campaign_fee_direct_transaction = portal_settings.site_campaign_fee_direct_transaction;
+    $scope.stripe_standard_mode = portal_settings.stripe_standard_mode;
 
     if (typeof $scope.tippingOptions === 'undefined' || $scope.tippingOptions == null) {
       $scope.tippingOptions = { toggle: false };
@@ -1471,7 +1480,7 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
       if ($scope.selectedReward.shipping) {
         if ($scope.shipping_error) {
           return;
-        }
+      }
       }
     }
     var invalid_elements = $('form, ng-form').find('.ng-invalid,.has-error');
@@ -1726,6 +1735,12 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
       } else {
         $scope.selecteContribution = 1;
       }
+    }
+ 
+    $scope.stripe_pledge = $scope.stripe
+    $scope.stripe_tip = $scope.stripe;
+    if(!$scope.site_campaign_fee_direct_transaction && $scope.stripe_standard_mode && $scope.campaign.managers[0] && $scope.campaign.managers[0].publishable_key){
+      $scope.stripe_pledge = Stripe($scope.campaign.managers[0].publishable_key);
     }
 
     // variable to store all attribute values
@@ -2014,7 +2029,8 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
         phone_number_id: $scope.chosenPhoneNumberId,
         anonymous_contribution: $scope.anonymous_contribution,
         anonymous_contribution_partial: $scope.partial_anonymous_contribution,
-        attributes: JSON.stringify(pledgeAttributes)
+        attributes: JSON.stringify(pledgeAttributes),
+        use_sca: 1
       };
 
       if ($scope.acceptExtraPledgeData && ($scope.selectedAccountType == 'Organization')) {
@@ -2084,10 +2100,14 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
               stripe_account_card_id: $scope.selectedCardID,
               amount: $scope.pledgeAmount,
               anonymous_contribution: $scope.anonymous_contribution,
-              anonymous_contribution_partial: $scope.partial_anonymous_contribution
+              anonymous_contribution_partial: $scope.partial_anonymous_contribution,
+              use_sca: 1
             };
-            promises.push(Restangular.one('campaign', $scope.campaign_id).one('pledge').customPOST(pledgeInfo));
+            
+            var pledge = PledgeService.makePledge(pledgeInfo, $scope.campaign_id, $scope.stripe_pledge, $scope.stripe_tip)
+            promises.push(pledge);
           }
+
           if ($scope.rewardsQueue.length) {
             angular.forEach($scope.rewardsQueue, function(value, key, obj) {
               var total = (value.shipOptions) ? $scope.total(value.shipOptions[0].cost) : value.amount;
@@ -2100,12 +2120,16 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
                 phone_number_id: $scope.chosenPhoneNumberId,
                 anonymous_contribution: $scope.anonymous_contribution,
                 anonymous_contribution_partial: $scope.partial_anonymous_contribution,
-                attributes: JSON.stringify(value.pledgeAttributes)
+                attributes: JSON.stringify(value.pledgeAttributes),
+                use_sca: 1
               };
+
+              var pledge = PledgeService.makePledge(pledgeInfo, $scope.campaign_id, $scope.stripe_pledge, $scope.stripe_tip);
+
               obj[key].total_cost_with_quantity = 0;
               obj[key].total_cost_with_quantity = value.amount * value.quantity;
               for (var i = 0; i < value.quantity; i++) {
-                promises.push(Restangular.one('campaign', $scope.campaign_id).one('pledge').customPOST(pledgeInfo));
+                promises.push(pledge);
               }
             });
           }
@@ -2120,7 +2144,8 @@ app.controller('PledgeCampaignCtrl', function($q, $location, $rootScope, $scope,
       }
       //Regular Pledge Start
       if (!$scope.pledgeReplace) {
-        Restangular.one('campaign', $scope.campaign_id).one('pledge').customPOST(pledgeInfo).then(function(success) {
+        PledgeService.makePledge(pledgeInfo, $scope.campaign_id, $scope.stripe_pledge, $scope.stripe_tip).then(function(success){
+          $scope.tip.dollar_amount = parseFloat(success.amount_tip).toFixed(2);
           msg = {
             'header': 'pledge_campaign_pledge_success'
           }

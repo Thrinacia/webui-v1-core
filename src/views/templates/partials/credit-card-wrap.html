@@ -19,13 +19,13 @@
 						<div class="field month">
 							<div class="ui left icon input">
 								<i class="empty calendar icon"></i>
-								<input numbers-only type="text" ng-model="cardSelected.exp_month" name="exp-month" placeholder="{{'retry_card_mm'| translate}}">
+								<input numbers-only type="text" ng-model="cardSelected.exp_month" name="exp-month" maxlength="2" placeholder="{{'retry_card_mm'| translate}}">
 							</div>
 						</div><!-- FIELD END -->
 
 						<div class="field year">
 							<div class="ui input">
-								<input numbers-only type="text" ng-model="cardSelected.exp_year" name="exp-year" placeholder="{{'retry_card_yy'| translate}}">
+								<input numbers-only type="text" ng-model="cardSelected.exp_year" name="exp-year" maxlength="4" placeholder="{{'retry_card_yy'| translate}}">
 								<div class="ui red corner small label">
 									<i class="asterisk icon"></i>
 								</div>
@@ -38,7 +38,7 @@
 					<div class="field cvc">
 						<div class="ui fluid left icon input">
 							<i class="lock icon"></i>
-							<input type="text" ng-model="cardSelected.cvc" placeholder="{{'retry_card_cvc'| translate}}" name="cvc">
+							<input type="text" ng-model="cardSelected.cvc" maxlength="3" placeholder="{{'retry_card_cvc'| translate}}" name="cvc">
 							<div class="ui red corner small label">
 								<i class="asterisk icon"></i>
 							</div>

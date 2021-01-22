@@ -1046,6 +1046,110 @@
               </div>
             </div>
           </div>
+          
+          <!-- Okta Social Login --
+          <div id="socialLogin-options" class="ui two column stackable setting-bg grid"> 
+            <div class="four wide column">
+              <h3 class="ui header main-font-color" translate>tab_portalsetting_social_login</h3>
+              <p translate>tab_portalsetting_social_login_note</p>
+            </div>
+            <div class="twelve wide column">
+              <div class="ui toggle checkbox defaultForm" ng-model="public_settings.social_login.toggle">
+                <input type="checkbox" name="public">
+                <label ng-show="public_settings.social_login.toggle" translate>tab_portalsetting_social_login_disable</label>
+                <label ng-show="!public_settings.social_login.toggle" translate>tab_portalsetting_social_login_enable</label>
+              </div>
+            </div>
+            
+            <div ng-if="public_settings.social_login.toggle">
+              <div class="sixteen wide column" >
+                <h4 class="ui dividing header" style="margin-top: 0.5rem" translate>tab_portalsetting_social_login_okta</h4>
+              </div>
+              <div class="ui three column stackable setting-bg grid" style="margin-top: 0.5rem">
+                <div class="five wide column">
+                  <p translate>tab_portalsetting_social_login_okta_note</p>
+                </div>
+                <div class="five wide column">
+                  <h4 translate>tab_portalsetting_social_login_okta_domain</h4>
+                  <div class="ui fluid form field">
+                    <input type="text" ng-model="private_settings.social_login.okta_domain">
+                  </div>
+                </div>
+                <div class="five wide column">
+                  <h4 translate>tab_portalsetting_social_login_okta_clientId</h4>
+                  <div class="ui fluid form field">
+                    <input type="text" ng-model="private_settings.social_login.okta_clientId">
+                  </div>
+                </div>
+              </div>
+
+              <div class="sixteen wide column" >
+                <h4 class="ui dividing header" style="margin-top: 0.5rem" translate>tab_portalsetting_social_login_choices_note</h4>
+              </div>
+
+              <div class="ui three column stackable setting-bg grid" style="margin-top: 0.5rem">
+                <div class="row">
+                  <div class="five wide column">
+                  <div class="ui toggle checkbox defaultForm" ng-model="public_settings.social_login_choices_google.toggle">
+                    <input type="checkbox" name="public">
+                    <label ng-show="public_settings.social_login_choices_google.toggle" translate>tab_portalsetting_social_login_choices_google_disable</label>
+                    <label ng-show="!public_settings.social_login_choices_google.toggle" translate>tab_portalsetting_social_login_choices_google_enable</label>
+                  </div>
+                  </div>
+                  <div class="five wide column">
+                    <div class="ui toggle checkbox defaultForm" ng-model="public_settings.social_login_choices_facebook.toggle">
+                      <input type="checkbox" name="public">
+                      <label ng-show="public_settings.social_login_choices_facebook.toggle" translate>tab_portalsetting_social_login_choices_facebook_disable</label>
+                      <label ng-show="!public_settings.social_login_choices_facebook.toggle" translate>tab_portalsetting_social_login_choices_facebook_enable</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sixteen wide column"  ng-if="public_settings.social_login_choices_google.toggle">
+                <h4 class="ui dividing header" style="margin-top: 0.5rem" translate>tab_portalsetting_social_login_google</h4>
+              </div>
+              <div class="ui three column stackable setting-bg grid" style="margin-top: 0.5rem" ng-if="public_settings.social_login_choices_google.toggle">
+                <div class="five wide column">
+                  <p translate>tab_portalsetting_social_login_google_note</p>
+                </div>
+                <div class="five wide column">
+                  <h4 translate>tab_portalsetting_social_login_google_clientId</h4>
+                  <div class="ui fluid form field">
+                    <input type="text" ng-model="private_settings.social_login.google_clientId">
+                  </div>
+                </div>
+                <div class="five wide column">
+                  <h4 translate>tab_portalsetting_social_login_google_clientSecret</h4>
+                  <div class="ui fluid form field">
+                    <input type="text" ng-model="private_settings.social_login.google_clientSecret">
+                  </div>
+                </div>
+              </div>
+
+              <div class="sixteen wide column" ng-if="public_settings.social_login_choices_facebook.toggle">
+                <h4 class="ui dividing header" style="margin-top: 0.5rem" translate>tab_portalsetting_social_login_facebook</h4>
+              </div>
+              <div class="ui three column stackable setting-bg grid" style="margin-top: 0.5rem"ng-if="public_settings.social_login_choices_facebook.toggle">
+                <div class="five wide column">
+                  <p translate>tab_portalsetting_social_login_facebook_note</p>
+                </div>
+                <div class="five wide column">
+                  <h4 translate>tab_portalsetting_social_login_facebook_clientId</h4>
+                  <div class="ui fluid form field">
+                    <input type="text" ng-model="private_settings.social_login.facebook_clientId">
+                  </div>
+                </div>
+                <div class="five wide column">
+                  <h4 translate>tab_portalsetting_social_login_facebook_clientSecret</h4>
+                  <div class="ui fluid form field">
+                    <input type="text" ng-model="private_settings.social_login.facebook_clientSecret">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div -->
 
           <div class="ui two column stackable setting-bg grid">
             <div class="four wide column">
@@ -3745,6 +3849,27 @@
               </form>
             </div>
           </div>
+
+          <!-- div class="ui two column stackable setting-bg grid" ng-show="showStripe">
+            <div class="left-col four wide column">
+              <h3 class="ui header main-font-color" translate> tab_portalsetting_payment_setting_sca_header </h3>
+              <p translate>
+                tab_portalsetting_payment_setting_sca_note
+              </p>
+            </div>
+            <div class="right-col twelve wide column ">
+              <form class="ui form" id="post-processing-interval">
+                <div class="field">
+                  <div class="ui toggle checkbox" ng-model="public_settings.site_campaign_strong_customer_auth.toggle" style="margin-bottom:10px;">
+                    <input type="checkbox" name="public">
+                    <label ng-show="public_settings.site_campaign_strong_customer_auth.toggle" translate>tab_portalsetting_payment_setting_sca_disable</label>
+                    <label ng-show="!public_settings.site_campaign_strong_customer_auth.toggle" translate>tab_portalsetting_payment_setting_sca_enable</label>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div-->
+
         </div>
 
         <div id="stripe-settings" class="portal-settings-wrap" ng-show="showStripe && public_settings.payment_setting_enabled">

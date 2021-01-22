@@ -1224,15 +1224,6 @@
                       </tr>
                     </tbody>
                     <tfoot>
-                      <tr class="total-contribution">
-                        <td PaymentFontColor>{{translate("campaign_page_review_total_contribution_text")}}</td>
-                        <td *ngIf="settingDecimalOption == 1 || settingDecimalOption == 2" PaymentFontColor>
-                          {{ mCampaign.currencies[0].code_iso4217_alpha | currencySymbolNumber}} {{total() | number:'1.2-2' }} {{mCampaign.currencies[0]["code_iso4217_alpha"]}}
-                        </td>
-                        <td *ngIf="settingDecimalOption == 3" PaymentFontColor>
-                          {{ mCampaign.currencies[0].code_iso4217_alpha | currencySymbolNumber}} {{total() | number:'1.0-0' }} {{mCampaign.currencies[0]["code_iso4217_alpha"]}}
-                        </td>
-                      </tr>
                       <tr class="total-contribution" *ngIf="tip.dollar_amount">
                         <td PaymentFontColor>{{translate("campaign_page_review_tip_text")}}</td>
                         <td *ngIf="settingDecimalOption == 1 || settingDecimalOption == 2" PaymentFontColor>
@@ -1244,6 +1235,15 @@
                           <span>{{ tipInfo["code_iso4217_alpha"] | currencySymbolNumber}}
                             {{tip.dollar_amount | number:'1.0-0' }}
                             {{tipInfo["code_iso4217_alpha"]}}</span>
+                        </td>
+                      </tr>
+                      <tr class="total-contribution">
+                        <td PaymentFontColor>{{translate("campaign_page_review_total_contribution_text")}}</td>
+                        <td *ngIf="settingDecimalOption == 1 || settingDecimalOption == 2" PaymentFontColor>
+                          {{ mCampaign.currencies[0].code_iso4217_alpha | currencySymbolNumber}} {{total() | number:'1.2-2' }} {{mCampaign.currencies[0]["code_iso4217_alpha"]}}
+                        </td>
+                        <td *ngIf="settingDecimalOption == 3" PaymentFontColor>
+                          {{ mCampaign.currencies[0].code_iso4217_alpha | currencySymbolNumber}} {{total() | number:'1.0-0' }} {{mCampaign.currencies[0]["code_iso4217_alpha"]}}
                         </td>
                       </tr>
                     </tfoot>

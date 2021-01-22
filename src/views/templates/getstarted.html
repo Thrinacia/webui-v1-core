@@ -491,7 +491,7 @@
               </div>
               <div class="eleven wide column">
                 <div class="field" id="sub-category-field">
-                  <select multiple ng-model="sub_category_ids" ui-select2="subcategorypicker" ng-attr-placeholder="{{'get_started_categorytext1' | translate}}" ng-disabled="enableCampaignRevisions && campaign.entry_status_id == 2 && user.person_type_id == 2">
+                  <select multiple ng-model="sub_category_ids.ids" ui-select2="subcategorypicker" ng-attr-placeholder="{{'get_started_categorytext1' | translate}}" ng-disabled="enableCampaignRevisions && campaign.entry_status_id == 2 && user.person_type_id == 2">
                     <option value="{{subcategory.category_id}}" class="item" ng-repeat="subcategory in subcategories | orderBy:'display_priority'">{{subcategory.name}}</option>
                   </select>
                 </div>

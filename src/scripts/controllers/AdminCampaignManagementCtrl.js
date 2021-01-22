@@ -318,6 +318,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
       $scope.ccurrency = success.currencies;
       if (success.pledges != null) {
         $scope.campaignRewards = success.pledges;
+        console.log($scope.campaignRewards);
       } else {
         $scope.campaignRewards = null;
       }
@@ -326,6 +327,18 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
 
   $scope.verifyReward = function (selectedReward) {
     $scope.selectedReward = selectedReward;
+    console.log(selectedReward);
+    //apply coupon data to reward
+    Restangular.one('campaign/'+$scope.cid+'/pledge-level').customGET().then(function (success) {
+      var rewarx = success.find(function(r) { return r.pledge_level_id == selectedReward.pledge_level_id; });
+      if (rewarx) {
+        $scope.selectedReward.coupon = rewarx.coupon;
+      } else {
+        $scope.selectedReward = null;
+      }
+      console.log(selectedReward);
+    });
+
     if (selectedReward.shipping) {
       $scope.shipAdd = true;
     } else {
@@ -380,9 +393,13 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
       email: $scope.user.email,
       password: retVal,
       password_confirm: retVal,
-      inline_registration: true, // do not send cofirmation email
+      inline_registration: true, // do not send confirmation email
     };
 
+    var markCouponAsApplied = $scope.selectedReward 
+      && $scope.selectedReward.coupon 
+      && $scope.selectedReward.coupon.length > 0
+      && $('#coupon-code-input').hasClass("checked");
 
     $scope.pdata = {
       entry_id: $scope.campaignSelected.entry_id,
@@ -397,6 +414,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
       email_notify: $scope.email_notify,
       reference_no: $scope.user.cheque_ref
     };
+    if (markCouponAsApplied) $scope.pdata.coupon_code = $scope.selectedReward.coupon[0].code;
     $scope.pdata.email_notify = $(".ui.checkbox.notifyEmail input").prop("checked");
 
     if ($scope.user.anonymous.type_id == 1) {
@@ -1572,6 +1590,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
 
   // Create transaction csv based on all transaction data 
   $scope.createTransactionCSV = function (campaign_id) {
+    console.log('this is the one');
     var transactionRequestArray = [];
     var totalNumTransaction = $scope.transaction_pagination.totalentries;
     var requiredNumCalls = 0;
@@ -1603,7 +1622,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         $scope.allTransactionArray = $scope.allTransactionArray.concat(resArr.data);
       });
       var nativeLookup = $scope.public_settings.site_theme_shipping_native_lookup;
-      var value = $translate.instant(['transaction_details_street_address', 'transaction_details_postal_code','transaction_details_city', 'transaction_details_country', 'transaction_details_withdrawn', 'transaction_details_campaign', 'transaction_details_card_number', 'transaction_details_Manual_Transaction', 'transaction_details_na', 'transaction_details_transaction_id', 'transaction_details_contributors_first', 'transaction_details_contributors_last', 'transaction_details_reward', 'transaction_details_amount', 'transaction_details_status', 'transaction_details_date', 'transaction_details_contributors_email', 'transaction_details_shipping_address', 'transaction_details_phone_number', 'transaction_details_reward_attribute', "transaction_details_charity_UK_taxpayer", "transaction_details_charity_giftaid", "transaction_details_charity_fullname", "transaction_details_charity_fulladdress", "transaction_details_charity_postcode", "transaction_details_charity_amount", "transaction_details_organization_name", "transaction_details_organization_email", "transaction_details_organization_phone", "transaction_details_organization_address", "tab_campaign_transaction_details_tip_amount"]);
+      var value = $translate.instant(['transaction_details_street_address', 'transaction_details_postal_code','transaction_details_city', 'transaction_details_country', 'transaction_details_withdrawn', 'transaction_details_campaign', 'transaction_details_card_number', 'transaction_details_Manual_Transaction', 'transaction_details_na', 'transaction_details_transaction_id', 'transaction_details_contributors_first', 'transaction_details_contributors_last', 'transaction_details_reward', 'transaction_details_amount', 'transaction_details_status', 'transaction_details_date', 'transaction_details_contributors_email', 'transaction_details_shipping_address', 'transaction_details_phone_number', 'transaction_details_reward_attribute', "transaction_details_charity_UK_taxpayer", "transaction_details_charity_giftaid", "transaction_details_charity_fullname", "transaction_details_charity_fulladdress", "transaction_details_charity_postcode", "transaction_details_charity_amount", "transaction_details_organization_name", "transaction_details_organization_email", "transaction_details_organization_phone", "transaction_details_organization_address", "tab_campaign_transaction_details_tip_amount", 'transaction_details_coupon_code', 'transaction_details_coupon_amount', 'transaction_details_coupon_type', 'transaction_details_coupon_name']);
       $scope.cardnum = value.transaction_details_card_number;
       $scope.noreward = value.transaction_details_na;
       $scope.tid = value.transaction_details_transaction_id;
@@ -1632,6 +1651,10 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         'Campaign': $scope.tcampaign,
         'Reward': $scope.treward,
         'Amount': $scope.tamount,
+        'Coupon Code': value.transaction_details_coupon_code,
+        'Coupon Name': value.transaction_details_coupon_name,
+        'Coupon Amount': value.transaction_details_coupon_amount,
+        'Coupon Type': value.transaction_details_coupon_type,
         'Status': $scope.tstatus,
         'First Name': $scope.tnamef,
         'Last Name': $scope.tnamel,
@@ -1675,6 +1698,27 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
         var organization_email = '';
         $scope.businessDataPhoneNumber = '';
         $scope.busCompleteaddress = '';
+
+        var translations = $translate.instant(['tab_coupon_percent', 'tab_coupon_amount']);
+
+        if (value.coupon && value.coupon.length > 0) {
+          $scope.coupon_code = value.coupon[0].code;
+          $scope.coupon_name = value.coupon[0].name;
+          //they are mutually exclusive
+          if (value.coupon[0].discount_amount > value.coupon[0].discount_percentage) {
+            $scope.coupon_amount = value.coupon[0].discount_amount;
+            $scope.coupon_type = translations.tab_coupon_amount;
+          } else {
+            $scope.coupon_amount = value.coupon[0].discount_percentage;
+            $scope.coupon_type = translations.tab_coupon_percent;
+          }
+        } else {
+          $scope.coupon_code = '';
+          $scope.coupon_name = '';
+          $scope.coupon_amount = '';
+          $scope.coupon_type = '';
+        }
+
         if (value.card) {
           $scope.cardn = '****' + ' ' + '****' + ' ' + '****' + value.card[0].last4;
           $scope.tstatus = globalStripeStatus[value.stripe_transaction_status_id - 1];
@@ -1754,6 +1798,10 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
                 'Campaign': $scope.campaign_name,
                 'Reward': $scope.rewardname,
                 'Amount': value.backer[0].amount,
+                'Coupon Code': $scope.coupon_code,
+                'Coupon Name': $scope.coupon_name,
+                'Coupon Amount': $scope.coupon_amount,
+                'Coupon Type': $scope.coupon_type,
                 'Status': $scope.tstatus,
                 'First Name': $scope.addbacker.first_name,
                 'Last Name': $scope.addbacker.last_name,
@@ -1777,6 +1825,10 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
                 'Campaign': $scope.campaign_name,
                 'Reward': $scope.rewardname,
                 'Amount': value.backer[0].amount,
+                'Coupon Code': $scope.coupon_code,
+                'Coupon Name': $scope.coupon_name,
+                'Coupon Amount': $scope.coupon_amount,
+                'Coupon Type': $scope.coupon_type,
                 'Status': $scope.tstatus,
                 'First Name': $scope.addbacker.first_name,
                 'Last Name': $scope.addbacker.last_name,
@@ -1869,7 +1921,7 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
           selectedTransactionsArray = selectedTransactionsArray.concat(resArr.data);
         });
         var nativeLookup = $scope.public_settings.site_theme_shipping_native_lookup;
-        var value = $translate.instant(['transaction_details_street_address', 'transaction_details_postal_code','transaction_details_city', 'transaction_details_country','transaction_details_withdrawn', 'transaction_details_campaign', 'transaction_details_card_number', 'transaction_details_Manual_Transaction', 'transaction_details_na', 'transaction_details_transaction_id', 'transaction_details_contributors_first', 'transaction_details_contributors_last', 'transaction_details_reward', 'transaction_details_amount', 'transaction_details_status', 'transaction_details_date', 'transaction_details_contributors_email', 'transaction_details_shipping_address', 'transaction_details_phone_number', 'transaction_details_reward_attribute', "transaction_details_charity_UK_taxpayer", "transaction_details_charity_giftaid", "transaction_details_charity_fullname", "transaction_details_charity_fulladdress", "transaction_details_charity_postcode", "transaction_details_charity_amount", "transaction_details_organization_name", "transaction_details_organization_email", "transaction_details_organization_phone", "transaction_details_organization_address", "tab_campaign_transaction_details_tip_amount"]);
+        var value = $translate.instant(['transaction_details_street_address', 'transaction_details_postal_code','transaction_details_city', 'transaction_details_country', 'transaction_details_withdrawn', 'transaction_details_campaign', 'transaction_details_card_number', 'transaction_details_Manual_Transaction', 'transaction_details_na', 'transaction_details_transaction_id', 'transaction_details_contributors_first', 'transaction_details_contributors_last', 'transaction_details_reward', 'transaction_details_amount', 'transaction_details_status', 'transaction_details_date', 'transaction_details_contributors_email', 'transaction_details_shipping_address', 'transaction_details_phone_number', 'transaction_details_reward_attribute', "transaction_details_charity_UK_taxpayer", "transaction_details_charity_giftaid", "transaction_details_charity_fullname", "transaction_details_charity_fulladdress", "transaction_details_charity_postcode", "transaction_details_charity_amount", "transaction_details_organization_name", "transaction_details_organization_email", "transaction_details_organization_phone", "transaction_details_organization_address", "tab_campaign_transaction_details_tip_amount", 'transaction_details_coupon_code', 'transaction_details_coupon_amount', 'transaction_details_coupon_type', 'transaction_details_coupon_name']);
         
         $scope.cardnum = value.transaction_details_card_number;
         $scope.noreward = value.transaction_details_na;
@@ -1899,6 +1951,10 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
           'Campaign': $scope.tcampaign,
           'Reward': $scope.treward,
           'Amount': $scope.tamount,
+          'Coupon Code': value.transaction_details_coupon_code,
+          'Coupon Name': value.transaction_details_coupon_name,
+          'Coupon Amount': value.transaction_details_coupon_amount,
+          'Coupon Type': value.transaction_details_coupon_type,  
           'Status': $scope.tstatus,
           'First Name': $scope.tnamef,
           'Last Name': $scope.tnamel,
@@ -1944,6 +2000,27 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
           var organization_email = '';
           $scope.businessDataPhoneNumber = '';
           $scope.busCompleteaddress = '';
+
+          var translations = $translate.instant(['tab_coupon_percent', 'tab_coupon_amount']);
+
+          if (value.coupon && value.coupon.length > 0) {
+            $scope.coupon_code = value.coupon[0].code;
+            $scope.coupon_name = value.coupon[0].name;
+            //they are mutually exclusive
+            if (value.coupon[0].discount_amount > value.coupon[0].discount_percentage) {
+              $scope.coupon_amount = value.coupon[0].discount_amount;
+              $scope.coupon_type = translations.tab_coupon_amount;
+            } else {
+              $scope.coupon_amount = value.coupon[0].discount_percentage;
+              $scope.coupon_type = translations.tab_coupon_percent;
+            }
+          } else {
+            $scope.coupon_code = '';
+            $scope.coupon_name = '';
+            $scope.coupon_amount = '';
+            $scope.coupon_type = '';
+          }
+
           // $scope.campaign_name = cname;
           if (value.card) {
             $scope.cardn = '****' + ' ' + '****' + ' ' + '****' + value.card[0].last4;
@@ -2024,6 +2101,10 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
                   'Campaign': value.campaign_name,
                   'Reward': $scope.rewardname,
                   'Amount': value.backer[0].amount,
+                  'Coupon Code': $scope.coupon_code,
+                  'Coupon Name': $scope.coupon_name,
+                  'Coupon Amount': $scope.coupon_amount,
+                  'Coupon Type': $scope.coupon_type,
                   'Status': $scope.tstatus,
                   'First Name': $scope.addbacker.first_name,
                   'Last Name': $scope.addbacker.last_name,
@@ -2047,6 +2128,10 @@ app.controller('AdminCampaignsCtrl', function ($q, $rootScope, CampaignSettingsS
                   'Campaign': value.campaign_name,
                   'Reward': $scope.rewardname,
                   'Amount': value.backer[0].amount,
+                  'Coupon Code': $scope.coupon_code,
+                  'Coupon Name': $scope.coupon_name,
+                  'Coupon Amount': $scope.coupon_amount,
+                  'Coupon Type': $scope.coupon_type,
                   'Status': $scope.tstatus,
                   'First Name': $scope.addbacker.first_name,
                   'Last Name': $scope.addbacker.last_name,

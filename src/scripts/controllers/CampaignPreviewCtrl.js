@@ -970,6 +970,18 @@ app.controller('CampaignPreviewCtrl', function($timeout, $interval, $location, $
       }
     }
 
+    var socialLoginVerified = true;
+    
+    if (typeof $scope.public_settings.social_login == "undefined") {
+      $scope.public_settings.social_login = { toggle: false};
+    }
+
+    if($scope.public_settings.social_login.toggle) {
+      if(!$rootScope.verified) {
+        socialLoginVerified = false;
+      }
+    }
+
     if ($scope.create) {
       if (!$('#creationCheck').checkbox('is checked')) {
         $scope.tos_not_checked = true;
