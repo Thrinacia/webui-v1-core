@@ -1,23 +1,13 @@
 import {Injectable} from "@angular/core"
 import {Http, Headers, RequestOptions, URLSearchParams} from "@angular/http"
 import {ConstantsGlobal} from "../Constants-Global"
-import {CookieService} from "./Cookie.service"
 
 @Injectable()
 export class StripeService {
-  authToken: string;
   public static stripe_account_id: number;
   public static stripe_account_card_id: number;
   
   constructor(private http: Http) {
-    this.refreshAuthToken();
-  }
-
-  /**
-   * Grab auth token from the cookie
-   */
-  refreshAuthToken() {
-    this.authToken = CookieService.getThrinaciaSedraAccount() ? CookieService.getThrinaciaSedraAccount() : CookieService.getAuth();
   }
 
   /**
@@ -26,9 +16,8 @@ export class StripeService {
    */
   getStripeAccount() {
     var headers = new Headers();
-    headers.append("X-Auth-Token", this.authToken);
     var options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
     return this.http.get(ConstantsGlobal.getApiUrlStripe(), options)
       .map(res => res.json());
@@ -50,11 +39,9 @@ export class StripeService {
       param["inline_token"] = inlineToken;
     }
     var headers = new Headers();
-    if (!inlineToken) {
-      headers.append("X-Auth-Token", this.authToken);
-    } 
+   
     var options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
     return this.http.post(ConstantsGlobal.getApiUrlStripe(), JSON.stringify(param), options)
       .map(res => res.json());
@@ -68,9 +55,8 @@ export class StripeService {
   getStripeAccountCard() {
     var API_URL_STRIPE_CARD = ConstantsGlobal.getApiUrlStripe() + StripeService.stripe_account_id + "/card/";
     var headers = new Headers();
-    headers.append("X-Auth-Token", this.authToken);
     var options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
 
     return this.http.get(API_URL_STRIPE_CARD, options)
@@ -99,9 +85,8 @@ export class StripeService {
       param["inline_token"] = inlineToken;
     }
     var headers = new Headers();
-    headers.append("X-Auth-Token", this.authToken);
     var options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
 
     return this.http.post(API_URL_STRIPE_CARD, JSON.stringify(param), options)
@@ -126,9 +111,8 @@ export class StripeService {
 
   getStripeChargeAmount() {
     var headers = new Headers();
-    headers.append("X-Auth-Token", this.authToken);
     var options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
     return this.http.get(ConstantsGlobal.getApiUrlStripeChargeAmount(), options)
       .map(res => res.json());

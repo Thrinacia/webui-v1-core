@@ -17,7 +17,6 @@ import { RegisterComponent } from "./components/modules/Register.component";
 import { ProfileComponent } from "./components/modules/Profile.component";
 
 import { CampaignService } from "./service/Campaign.service";
-import { CookieService } from "./service/Cookie.service";
 import { StripeService } from "./service/Stripe.service";
 import { PledgeService } from "./service/Pledge.service";
 import { UserService } from "./service/User.service";
@@ -109,7 +108,6 @@ import 'rxjs/add/operator/map';
     CampaignService,
     StripeService,
     PledgeService,
-    CookieService,
     UtilService,
     SettingsService,
     TranslationService

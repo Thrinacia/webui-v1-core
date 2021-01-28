@@ -91,7 +91,7 @@
               <div class="top-head">
                 <h3 class="ui header"> {{'login_register_header' | translate}} {{$root.site_company}}? </h3>
                 <p translate> login_register_message </p>
-                <div ng-show="login_successful && !formData.errors" class="ui success message">
+                <div ng-show="formData.successful && !formData.errors" class="ui success message">
                   {{registration_processing}}
                 </div>
                 <div ng-show="formData.errors" class="ui negative message">

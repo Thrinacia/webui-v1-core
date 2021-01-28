@@ -3,7 +3,6 @@ import { UserService } from "../../service/User.service";
 import { UtilService } from "../../service/Util.service";
 import { CampaignService } from "../../service/Campaign.service";
 import { TranslationService } from '../../service/Translation.service';
-import { CookieService } from '../../service/Cookie.service';
 import { ConstantsGlobal } from "../../Constants-Global";
 import { FileUploader, Headers } from 'ng2-file-upload/ng2-file-upload';
 
@@ -72,15 +71,9 @@ export class ProfileComponent implements OnInit, OnChanges {
     this.getProfile();
     this.translationService.setupTranslation("user_profile");
     this.API_HOST = ConstantsGlobal.getApiHost();
-    UserService.getAuthFromCookie();
-    this.profileResourceHeaders = [{
-      name: "X-Auth-Token",
-      value: UserService.authToken
-    }];
 
     this.fileUploader = new FileUploader({
       url: `${ConstantsGlobal.getApiUrlAccountResourceFile()}`,
-      authToken: UserService.authToken,
       autoUpload: false,
       headers: this.profileResourceHeaders,
       method: 'POST',
@@ -216,7 +209,6 @@ export class ProfileComponent implements OnInit, OnChanges {
   saveProfile(param: Object, type: number) {
     if (type == this.PROFILE_EDIT_SAVING) {
       this.fileUploader.onBuildItemForm = (fileItem: any, form: any) => {
-        form.append("X-Auth-Token", UserService.authToken);
         form.append("resource_content_type", "image");
         form.append("resource", this.uploadingProfileImage);
       };
@@ -247,7 +239,6 @@ export class ProfileComponent implements OnInit, OnChanges {
           this.isProfilePasswordSaving = false;
           this.checkProfilePasswordSavedSuccess();
         }
-        CookieService.setFirstName(this.userInfo["first_name"]);
         this.onUpdateUserInfo.emit(this.userInfo);
         for (let prop in this.userInfo) {
           if (this.userInfo.hasOwnProperty(prop)) {
@@ -393,15 +384,20 @@ export class ProfileComponent implements OnInit, OnChanges {
   }
 
   getProfile() {
-    this.userService.getProfile(CookieService.getPersonID())
-      .subscribe(
-      res => {
-        if (res.files && res.files.length) {
-          this.profileResourceId = res.files[0]["id"];
-        }
+    this.userService.getAuthenticatedUser().subscribe(
+      user => {
+        this.userService.getProfile(user.person_id)
+          .subscribe(
+          res => {
+            if (res.files && res.files.length) {
+              this.profileResourceId = res.files[0]["id"];
+            }
+          },
+          error => UtilService.logError(error)
+        );
       },
       error => UtilService.logError(error)
-      );
+    )
   }
 
 }

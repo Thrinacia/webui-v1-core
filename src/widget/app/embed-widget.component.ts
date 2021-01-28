@@ -10,7 +10,6 @@ import { UserService } from "./service/User.service";
 import { CampaignService } from "./service/Campaign.service";
 import { StripeService } from "./service/Stripe.service";
 import { PledgeService } from "./service/Pledge.service";
-import { CookieService } from "./service/Cookie.service";
 import { UtilService } from "./service/Util.service";
 import { ScriptService } from "./service/Script.service";
 import { SettingsService } from "./service/Settings.service";
@@ -327,10 +326,13 @@ export class AppComponent implements OnInit {
       this.mSettingsService = settingsService;
       this.elementRef = elementRef;
       this.mUserService = userService;
-      this.authToken = CookieService.getThrinaciaSedraAccount() ? CookieService.getThrinaciaSedraAccount() : CookieService.getAuth();
-      this.personId = CookieService.getPersonID();
-      this.userInfo["first_name"] = CookieService.getFirstName();
       this.translationService.setupTranslation("campaign_page");
+
+      this.mUserService.getAuthenticatedUser().subscribe(res => {
+        //this.personId = res.person_id;
+        //this.userInfo["firstName"] = res.first_name;
+        this.onLoginSuccess(res);
+      });
 
       this.shippingFee = !this.shippingFee ? 0 : this.shippingFee;
       let eleAttr = this.elementRef.nativeElement.attributes;
@@ -437,11 +439,11 @@ export class AppComponent implements OnInit {
               if(this.siteSettings.hasOwnProperty('site_campaign_campaign_toggle_disclaimer_text')) {
                 this.disclaimerMsg = this.siteSettings['site_campaign_campaign_toggle_disclaimer_text'];
               }
-              this.getCampaign(this.authToken);
+              this.getCampaign();
             }
           },
           error => {
-            this.getCampaign(this.authToken);
+            this.getCampaign();
             UtilService.logError(error);
           }
         );
@@ -652,7 +654,7 @@ export class AppComponent implements OnInit {
   applyCoupon(couponCode: string) {
     let plid = this.pledgeParam["pledge_level_id"];
     this.couponAppliedMessage = this.translate("campaign_page_searching_coupon");
-    this.mCampaignService.getCouponData(ConstantsGlobal.CAMPAIGN_ID, couponCode, plid, this.authToken).subscribe(
+    this.mCampaignService.getCouponData(ConstantsGlobal.CAMPAIGN_ID, couponCode, plid).subscribe(
       coupon => {
         this.currentCoupon = coupon;
         this.pledgeParam["coupon_code"] = this.couponCode;
@@ -673,8 +675,8 @@ export class AppComponent implements OnInit {
   /**
    * Get campaign data through API
    */
-  getCampaign(authToken?: string) {
-    this.mCampaignService.getCampaignData(ConstantsGlobal.CAMPAIGN_ID, authToken).subscribe(
+  getCampaign() {
+    this.mCampaignService.getCampaignData(ConstantsGlobal.CAMPAIGN_ID).subscribe(
       campaign => this.formatCampaignData(campaign),
       error => {
         UtilService.logError(error);
@@ -773,8 +775,6 @@ export class AppComponent implements OnInit {
     this.mUserService.getProfile(this.personId)
       .subscribe(
       res => {
-        console.log("get profile");
-        console.log(res);
         this.userInfo["first_name"] = res["first_name"];
         this.userInfo["last_name"] = res["last_name"];
         this.userInfo["profile_image"] = res.files != null && res.files.length ? ConstantsGlobal.getApiUrlCampaignProfileImage() + res.files[0].path_external : null;
@@ -2121,25 +2121,20 @@ export class AppComponent implements OnInit {
   onLoginSuccess(data) {
     this.isLoggedInSuccessful = true;
     this.contributionType = this.CONTRIBUTION_TYPE_LOGIN;
-    console.log(data);
     this.userInfo = {
       "first_name": data.first_name,
       "last_name": data.last_name,
       "email": data.email
     };
+    this.personId = data.person_id
     if (this.referralCandyEnabled) {
       this.referralCandyData["email"] = data["email"];
       this.referralCandyData["firstName"] = data["first_name"];
       this.referralCandyData["lastName"] = data["last_name"];
     }
     this.stripeCards = [];
-    this.mUserService.getUserData(data);
-    this.authToken = CookieService.getAuth();
-    this.personId = CookieService.getPersonID();
-    UserService.getAuthFromCookie();
+    this.personId = data.person_id;
     this.getProfile();
-    this.mCampaignService.refreshAuthToken();
-    this.mStripeService.refreshAuthToken();
     this.mStripeService.getStripeAccount().subscribe(
       res => {
         if (res.length) {
@@ -2274,7 +2269,7 @@ export class AppComponent implements OnInit {
     if (this.isAddingCard && this.stripeElement.toggle && this.stripeElementError) {
       this.scrollToError();
       return;
-    } else if (!this.authToken && this.stripeElement.toggle && this.stripeElementError) {
+    } else if (!this.personId && this.stripeElement.toggle && this.stripeElementError) {
       this.scrollToError();
       return;
     }
@@ -2517,7 +2512,6 @@ export class AppComponent implements OnInit {
           this.getStripeAccountCard();
           this.getUserAddress();
           this.getUserPhone();
-          console.log("getting auth user data");
           this.getAuthenticatedUserData();
         }
         else {
@@ -2526,7 +2520,6 @@ export class AppComponent implements OnInit {
             this.mUserService.login(this.loginEmail, this.loginPassword).subscribe(
               data => {
                 this.onLoginSuccess(data);
-                console.log(data);
                 this.loadReferralCandyPopup();
               },
               error => {
@@ -2544,11 +2537,9 @@ export class AppComponent implements OnInit {
         this.isContributionView = false;
 
         if (this.fbTrackingEnabled) {
-          console.log("Facebook Pixel ID: "+this.fbId);
           this.loadFBPixel(this.fbId);
         }
         if (this.googleTrackingEnabled) {
-          console.log("Google Analytics ID: "+this.gaId);
           this.loadGoogleAnalytics(this.gaId);
         }
       
@@ -2556,13 +2547,6 @@ export class AppComponent implements OnInit {
 
           this.referralCandyData["invoiceNumber"] = res.entry_backer_id;
 
-          console.log(this.userInfo);
-          console.log(this.expressRegisterInfo);
-          console.log(this.guestPledgeParam);
-          console.log(this.pledgeAttributes);
-          console.log(this.pledgeParam);
-          console.log(this.loginEmail);
-          
           if (this.contributionType == this.CONTRIBUTION_TYPE_EXPRESS) {
             this.referralCandyData["email"] = this.expressRegisterInfo["email"];
             this.referralCandyData["firstName"] = this.expressRegisterInfo["first_name"];
@@ -2594,7 +2578,6 @@ export class AppComponent implements OnInit {
   }
 
   pledgeAsGuest() {
-    console.log("pledge as guest "+this.contributionType);
     this.mCampaignService.pledgeAsGuest(ConstantsGlobal.CAMPAIGN_ID, this.guestPledgeParam)
       .subscribe(
       res => {
@@ -2607,17 +2590,14 @@ export class AppComponent implements OnInit {
         this.isContributionView = false;
 
         if (this.fbTrackingEnabled) {
-          console.log("Facebook Pixel ID: "+this.fbId);
           this.loadFBPixel(this.fbId);
         }
 
         if (this.googleTrackingEnabled) {
-          console.log("Google Analytics ID: "+this.gaId);
           this.loadGoogleAnalytics(this.gaId);
         }
 
         if (this.referralCandyEnabled) {
-          console.log(this.mCampaign);
           this.referralCandyData["invoiceNumber"] = res.entry_backer_id;
           this.referralCandyData["email"] = this.guestPledgeParam["email"];
           this.referralCandyData["amount"] = this.guestPledgeParam["amount"];
@@ -2680,13 +2660,8 @@ export class AppComponent implements OnInit {
       this.referralCandyData.amount,
       this.referralCandyData.unixTimestamp)
     .subscribe(res => {
-      console.log("res = ");
-      console.log(res);
 
       this.referralCandyData.hash = res.signature;
-
-      console.log(this.referralCandyEnabled);
-      console.log(this.referralCandyData);
 
       if(this.referralCandyEnablePopup){
         //this function is from referral candy
@@ -2700,13 +2675,9 @@ export class AppComponent implements OnInit {
           r={email:"a",fname:"b",lname:"c",amount:"d",currency:"e","accepts-marketing":"f",timestamp:"g","referral-code":"h",locale:"i","external-reference-id":"k",signature:"ab"};
           i=e.getElementsByTagName(z)[0];
           s=function(e,t){if(t){return""+e+"="+encodeURIComponent(t)}else{return""}};
-          console.log(l);
-          console.log(e.getElementById(l));
           d=function(e){return""+p+h.getAttribute(t)+".js?lightbox=1&aa=75&"};
           if(!e.getElementById(l)){
             h=e.getElementById(c);
-            console.log(c);
-            console.log(h);
             if(h){
 
               //CUSTOM: mod the rc data div
@@ -2720,12 +2691,9 @@ export class AppComponent implements OnInit {
               h.setAttribute("data-external-reference-id", data.invoiceNumber);
               h.setAttribute("data-signature", data.hash);
 
-              console.log(h);
-
               o=e.createElement(z);o.id=l;
               a=function(){var e;e=[];for(n in r){u=r[n];v=h.getAttribute("data-"+n);e.push(s(u,v))}return e}();
               o.src="//"+d(h.getAttribute(t))+a.join("&");
-              console.log(o.src);
               return i.parentNode.insertBefore(o,i)
             }
           }
@@ -2864,8 +2832,6 @@ export class AppComponent implements OnInit {
     this.mUserService.getAuthenticatedUser().subscribe(
       res => {
         this.fullUserData = res;
-        console.log("full user data");
-        console.log(this.fullUserData);
         this.referralCandyData["email"] = this.fullUserData.email;
         this.loadReferralCandyPopup();
       },
@@ -2972,7 +2938,7 @@ export class AppComponent implements OnInit {
     let isMessageValidated = false;
     // Need to replace newline with actual html tags to render properly in email clients
     this.contactManagerMessage.body = this.contactManagerMessage.body.replace(/(\r\n|\n|\r)/gm, "<br>");
-    jQuery(".contact-message.form").form({
+    jQuery(".contact-form.form").form({
       inline: true,
       onSuccess: function () {
         isMessageValidated = true;
@@ -3005,9 +2971,8 @@ export class AppComponent implements OnInit {
     if (isMessageValidated) {
       jQuery(".contact-message .actions .button").addClass("loading");
       let headers = new Headers();
-      headers.append("X-Auth-Token", this.authToken);
       let options = new RequestOptions({
-        headers: headers
+        headers: headers, withCredentials: true
       });
 
       this.contactManagerMessage.person_id = this.mCampaign.managers[0].id;
@@ -3056,12 +3021,11 @@ export class AppComponent implements OnInit {
     this.mUserService.logout().subscribe(
       () => {
         jQuery(".account-dropdown").dropdown("hide");
-        CookieService.deleteAuth();
-        this.authToken = CookieService.getAuth();
-        this.userInfo["first_name"] = CookieService.getFirstName();
+        this.userInfo["first_name"] = '';
         this.addressList = [];
         this.isAddingAddress = true;
         this.shippingFee = 0;
+        this.personId = null;
       },
       error => UtilService.logError(error)
     );
@@ -3189,10 +3153,9 @@ export class AppComponent implements OnInit {
   }
 
   total() {
-    let tip = this.tip ? parseFloat(this.tip.value) : 0;
+    let tip = (this.tip && this.tip.value) ? parseFloat(this.tip.value) : 0;
     let contrib = this.totalAmount;
     let total = tip+contrib
-    //var total: number = this.tip ? parseFloat(this.totalAmount+this.tip.value) : this.totalAmount;
     return total;
   }
 

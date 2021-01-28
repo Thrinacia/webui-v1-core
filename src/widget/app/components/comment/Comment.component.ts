@@ -3,7 +3,6 @@ import {Http, Headers, RequestOptions} from "@angular/http";
 import {ConstantsGlobal} from "../../Constants-Global";
 import {UtilService} from "../../service/Util.service";
 import {UserService} from "../../service/User.service";
-import {CookieService} from "../../service/Cookie.service";
 import { TranslationService } from '../../service/Translation.service';
 
 declare let jQuery: any;
@@ -11,12 +10,11 @@ declare let jQuery: any;
 @Component({
   selector: "comment",
   template: require("raw-loader!./Comment.html"),
-  providers: [UserService, CookieService]
+  providers: [UserService]
 })
 
 export class CommentComponent {
 
-  @Input() authToken: string;
   @Input() personId: string;
   @Input() userInfo: any;
   @Output() onLogOut = new EventEmitter();
@@ -54,11 +52,14 @@ export class CommentComponent {
           this.formatCommentsData(res);
         }
       },
-      error => UtilService.logError(error)
+      error => {
+        UtilService.logError(error);
+      }
       )
   }
 
   formatCommentsData(commentsRes: any) {
+    this.comments = [];
     for (let index in commentsRes) {
       let commentPerson = commentsRes[index].comment_person[0];
       if (commentPerson.person_files != null && commentPerson.person_files.length) {
@@ -73,9 +74,8 @@ export class CommentComponent {
 
   setComment() {
     let headers = new Headers();
-    headers.append("X-Auth-Token", this.authToken);
     let options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
 
     this.http.post(CommentComponent.API_URL_COMMENT, JSON.stringify(this.newComment), options)
@@ -94,9 +94,8 @@ export class CommentComponent {
     let API_URL_COMMENT = ConstantsGlobal.getApiUrlCampaign() + ConstantsGlobal.CAMPAIGN_ID + "/comment/" + comment.id;
     if (comment.isEditing) {
       let headers = new Headers();
-      headers.append("X-Auth-Token", this.authToken);
       let options = new RequestOptions({
-        headers: headers
+        headers: headers, withCredentials: true
       });
 
       this.http.put(API_URL_COMMENT, JSON.stringify(comment), options)
@@ -115,18 +114,19 @@ export class CommentComponent {
     comment.isDeleting = !comment.isDeleting;
   }
 
-  deleteComment(comment: any) {
+  deleteComment(comment: any, index: any) {
     let API_URL_COMMENT = ConstantsGlobal.getApiUrlCampaign() + ConstantsGlobal.CAMPAIGN_ID + "/comment/" + comment.id;
     let headers = new Headers();
-    headers.append("X-Auth-Token", this.authToken);
     let options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
 
     this.http.delete(API_URL_COMMENT, options)
       .map(res => res.json())
       .subscribe(
       res => {
+        comment.isDeleting = false;
+        this.comments = this.comments.filter((val, i) => i != index);
         this.getComments();
       },
       error => UtilService.logError(error)
@@ -138,9 +138,8 @@ export class CommentComponent {
     if (this.personId) {
       let API_URL_COMMENT_ACTION = ConstantsGlobal.getApiUrlCampaign() + ConstantsGlobal.CAMPAIGN_ID + "/comment/" + comment.id + "/comment-action";
       let headers = new Headers();
-      headers.append("X-Auth-Token", this.authToken);
       let options = new RequestOptions({
-        headers: headers
+        headers: headers, withCredentials: true
       });
       let commentAction = {};
       // Upvote or Downvote

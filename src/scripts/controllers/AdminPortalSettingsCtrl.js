@@ -1978,8 +1978,11 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
 
   $scope.scrollTo = function(idOrClass) {
     setTimeout(function() { 
+      var element = jQuery(idOrClass);
+      var offset = element ? element.offset() : null;
+      var top = offset ? offset.top : null;
       jQuery("html, body").animate({
-        scrollTop: jQuery(idOrClass).offset().top - 15
+        scrollTop: top - 15
       }, "fast");
     });
   }
@@ -2041,9 +2044,10 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
       }
     }
 
+    /*
     if($scope.public_settings.social_login && $scope.public_settings.social_login.toggle){
       
-      if($scope.private_settings.social_login.okta_domain || $scope.private_settings.social_login.okta_clientId){
+      if(!$scope.private_settings.social_login.okta_domain && !$scope.private_settings.social_login.okta_clientId){
         var translate = $translate.instant(['tab_portalsetting_campaign_missing_social_login_info']);
         msg = {
           'header': translate.tab_portalsetting_campaign_missing_social_logi_info
@@ -2056,6 +2060,7 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
 
       console.log($scope.private_settings)
     }
+    */
 
     //make sure all referralcandy data is integrated
     if ($scope.public_settings.site_campaign_referralcandy_analytics && $scope.public_settings.site_campaign_referralcandy_analytics.toggle) {
@@ -2238,12 +2243,6 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
     var privateSettings = {
       site_hide_transaction_details_campaign_manager: $scope.private_settings.site_hide_transaction_details_campaign_manager,
       site_campaign_referralcandy_analytics_secret: $scope.private_settings.site_campaign_referralcandy_analytics_secret,
-    }
-    if($scope.private_settings.social_login){
-      privateSettings.okta_domain = $scope.private_settings.social_login.okta_domain
-      privateSettings.otka_clientId = $scope.private_setting.social_login.otka_clientId
-      privateSettings.google_clientSecret = $scope.social_login.google_clientSecret
-      privateSettings.facebook_clientSecret = $scope.social_login.facebook_clientSecret  
     }
 
     if (!$scope.public_settings.site_campaign_defaults.toggle) {
@@ -2890,6 +2889,12 @@ app.controller('AdminPortalSettingsCtrl', function($scope, $rootScope, $location
         site_email_address_from: $scope.private_settings.site_email_address_from,
         site_email_address_admin: $scope.private_settings.site_email_address_admin,
       };
+      if($scope.private_settings.social_login){
+        privateSettings.okta_domain = $scope.private_settings.social_login.okta_domain
+        privateSettings.otka_clientId = $scope.private_setting.social_login.otka_clientId
+        privateSettings.google_clientSecret = $scope.social_login.google_clientSecret
+        privateSettings.facebook_clientSecret = $scope.social_login.facebook_clientSecret  
+      }
 
       // save private settings
       requestQueue.push(Restangular.one('portal/setting').customPUT(privateSettings));

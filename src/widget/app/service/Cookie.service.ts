@@ -1,3 +1,4 @@
+import { ConstantsGlobal } from "../Constants-Global";
 export class CookieService {
   static AUTH_TOKEN: string = "reach_auth_token";
   static REACH_FIRST_NAME: string = "reach_name";
@@ -8,8 +9,8 @@ export class CookieService {
    * @param  {string} value auth token
    */
   public static setAuth(value: string) {
-    document.cookie = this.AUTH_TOKEN + "=" + value;
-    document.cookie = "max-age=2628000";
+    document.cookie = this.AUTH_TOKEN + "=" + value + ';samesite=none;secure';
+    document.cookie = "max-age=2628000" + ';samesite=none;secure';
   }
 
   /**
@@ -26,7 +27,8 @@ export class CookieService {
    * Get auth token from the cookie
    * @return {string} auth token
    */
-  public static getAuth() {
+  public static async getAuth() {
+    /*
     var cookieArr = document.cookie.split(";");
     var strLengthAuthToken = this.AUTH_TOKEN.length;
     for (var i = 0; i < cookieArr.length; i++) {
@@ -34,8 +36,20 @@ export class CookieService {
       if (cookieArr[i].substring(0, strLengthAuthToken) == this.AUTH_TOKEN) {
         return cookieArr[i].substring(strLengthAuthToken + 1, cookieArr[i].length);
       }
+    }*/    
+    let user: any = {};
+    let auth_token: String = '';
+    try{
+      let res = await fetch(ConstantsGlobal.getApiUrl()+'authenticate')
+        if(res.ok){
+          user = await res.json();
+          auth_token = user.auth_token;
+        }
+        console.log(user);
+    } catch (error){
+
     }
-    return null;
+    return auth_token;
   }
 
   /**
@@ -63,7 +77,7 @@ export class CookieService {
   }
 
   public static setPersonID(value: string) {
-    document.cookie = this.REACH_PERSON_ID + "=" + value;
+    document.cookie = this.REACH_PERSON_ID + "=" + value + ';samesite=none;secure';
   }
 
   public static getPersonID() {
@@ -91,6 +105,8 @@ export class CookieService {
   }
 
   public static getThrinaciaSedraAccount() {
+    return this.getAuth();
+    /*
     var cookieArr = document.cookie.split(";");
     var cookieObj = {};
     var currentUserLength = "current.user=".length;
@@ -105,5 +121,6 @@ export class CookieService {
       }
     }
     return cookieObj["auth_token"];
+    */
   }
 }

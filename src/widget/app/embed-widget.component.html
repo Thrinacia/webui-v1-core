@@ -9,7 +9,7 @@
       <div id="campaign-header">
         <div id="campaign-header-top">
           <div class="ui basic segment center aligned">
-            <div class="ui dropdown profile-nav" *ngIf="authToken" ngSemantic>
+            <div class="ui dropdown profile-nav" *ngIf="personId" ngSemantic>
               <img [src]="userInfo.profile_image" *ngIf="userInfo.profile_image" alt="" class="ui avatar image"> {{userInfo.first_name}}
               <i class="dropdown icon"></i>
               <div class="menu">
@@ -407,8 +407,8 @@
                   </div>
                 </div>
                 <div id="comment-tab-body" class="ui" *ngIf="isCommentTab">
-                  <comment [authToken]="authToken" [personId]="personId" [userInfo]="userInfo" (onLogOut)="logout()"></comment>
-                  <div *ngIf="!authToken && !isContributionView && isCommentTab">
+                  <comment [personId]="personId" [userInfo]="userInfo" (onLogOut)="logout()"></comment>
+                  <div *ngIf="!personId && !isContributionView && isCommentTab">
                     <div class="ui warning message">
                       {{translate("campaign_page_must_be_logged_in_comment")}}
                     </div>
@@ -424,7 +424,7 @@
                   </div>
                 </div>
                 <div id="contact-manager-tab-body" class="ui" *ngIf="isContactTab" ContactFontColor>
-                  <div *ngIf="!authToken && !isContributionView && isContactTab">
+                  <div *ngIf="!personId && !isContributionView && isContactTab">
                     <div class="ui warning message">
                       {{translate("campaign_page_must_be_logged_in_message")}}
                     </div>
@@ -438,7 +438,7 @@
                       <register-form (onSuccess)="onRegisterSuccess($event)" *ngIf="!isFormLogin" [isContributing]="false"></register-form>
                     </div>
                   </div>
-                  <div class="contact-message" *ngIf="authToken">
+                  <div class="contact-message" *ngIf="personId">
                     <div class="fluid ui large form contact-form">
                       <div class="ui grid">
                         <div class="eight wide column">
@@ -753,7 +753,7 @@
                       <div class="ui black button" (click)="changeView(false)">{{translate("campaign_page_back_text")}}</div>
                     </div>
                     <div class="right-col column eight wide">
-                      <div class="account-dropdown ui inline dropdown" ngSemantic *ngIf="authToken">
+                      <div class="account-dropdown ui inline dropdown" ngSemantic *ngIf="personId">
                         <div class="text ui header">
                           <img [src]="userInfo.profile_image" alt="" class="ui avatar image" *ngIf="userInfo.profile_image">
                           <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAIAAABEtEjdAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJ
@@ -896,7 +896,7 @@
                     </div>
                   </div>
                 </div>
-                <div id="account-info" *ngIf="!authToken">
+                <div id="account-info" *ngIf="!personId">
                   <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_account_information_header")}}</h2>
                   <div class="ui top attached tabular menu account-info-tab-menu" ngSemantic>
                     <a class="active item" *ngIf="currentPaymentLoginTab == 'login' && (contributeBehaviour == 1 || contributeBehaviour == 3 || contributeBehaviour == 6 || contributeBehaviour == 8)" (click)="setContributeType(CONTRIBUTION_TYPE_LOGIN); setCurrentLoginTab('login')"
@@ -939,7 +939,7 @@
                         <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_phone_information_header")}}</h2>
                         <phone-form [phoneObj]="phoneInfo"></phone-form>
                       </div>
-                      <div class="contribution-message-info" *ngIf="isContributionMessageEnabled && !authToken">
+                      <div class="contribution-message-info" *ngIf="isContributionMessageEnabled && !personId">
                         <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_contribution_message_information_header")}}</h2>
                         <div class="ui form">
                           <div class="field">
@@ -966,7 +966,7 @@
                         <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_phone_information_header")}}</h2>
                         <phone-form [phoneObj]="phoneInfo"></phone-form>
                       </div>
-                      <div class="contribution-message-info" *ngIf="isContributionMessageEnabled && !authToken">
+                      <div class="contribution-message-info" *ngIf="isContributionMessageEnabled && !personId">
                         <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_contribution_message_information_header")}}</h2>
                         <div class="ui form">
                           <div class="field">
@@ -1004,7 +1004,7 @@
                         <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_phone_information_header")}}</h2>
                         <phone-form [phoneObj]="phoneInfo"></phone-form>
                       </div>
-                      <div class="contribution-message-info" *ngIf="isContributionMessageEnabled && !authToken">
+                      <div class="contribution-message-info" *ngIf="isContributionMessageEnabled && !personId">
                         <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_contribution_message_information_header")}}</h2>
                         <div class="ui form">
                           <div class="field">
@@ -1015,7 +1015,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="card-info" *ngIf="authToken">
+                <div class="card-info" *ngIf="personId">
                   <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_card_information_header")}}</h2>
                   <card [ngClass]="{ 'error': stripeElementError }" [cardObj]="cardInfo" (error)="stripeElementValidation($event)" [isSubmitting]="isSubmitting" [stripeElement]="stripeElement" *ngIf="isAddingCard"></card>
                   <div class="credit-card-dropdown" *ngIf="!isAddingCard">
@@ -1047,7 +1047,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="contribution-message-info" *ngIf="isContributionMessageEnabled && authToken">
+                <div class="contribution-message-info" *ngIf="isContributionMessageEnabled && personId">
                   <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_contribution_message_information_header")}}</h2>
                   <div class="ui form">
                     <div class="field">
@@ -1055,7 +1055,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="address-info" *ngIf="authToken && isRewardShipping">
+                <div class="address-info" *ngIf="personId && isRewardShipping">
                   <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_shipping_information_header")}}</h2>
                   <address-form [addressObj]="addressInfo" *ngIf="isAddingAddress" (selectedCity)="selectAddress($event)"></address-form>
                   <div class="address-dropdown" *ngIf="!isAddingAddress">
@@ -1071,7 +1071,7 @@
                     </div>
                   </div>
                   <div class="button-wrap">
-                    <div class="ui button blue info-buttons" ThemeColor (click)="toggleNewAddress()" [hidden]="!authToken || !addressList.length">
+                    <div class="ui button blue info-buttons" ThemeColor (click)="toggleNewAddress()" [hidden]="!personId || !addressList.length">
                       <div class="add-card-text" [hidden]="isAddingAddress">
                         {{translate("campaign_page_add_new_address_button")}}
                       </div>
@@ -1081,7 +1081,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="phone-info" *ngIf="authToken && isRewardShipping">
+                <div class="phone-info" *ngIf="personId && isRewardShipping">
                   <h2 class="ui dividing header" FontColor PaymentFontColor>{{translate("campaign_page_phone_information_header")}}</h2>
                   <phone-form [phoneObj]="phoneInfo" *ngIf="isAddingPhone"></phone-form>
                   <div class="cards-dropdown" *ngIf="!isAddingPhone">
@@ -1097,7 +1097,7 @@
                     </div>
                   </div>
                   <div class="button-wrap">
-                    <div class="ui button blue info-buttons" ThemeColor (click)="toggleNewPhone()" [hidden]="!authToken || !addressList.length">
+                    <div class="ui button blue info-buttons" ThemeColor (click)="toggleNewPhone()" [hidden]="!personId || !addressList.length">
                       <div class="add-phone-text" [hidden]="isAddingPhone">
                         {{translate("campaign_page_phone_add_button")}}
                       </div>
@@ -1253,7 +1253,7 @@
                   and
                   <a href="https://reach.thrinacia.com/privacy" target="_blank">Privacy Policy</a>
                 </p> -->
-                  <div class="ui grid two column stackable" *ngIf="!(contributionType == CONTRIBUTION_TYPE_LOGIN && !authToken)">
+                  <div class="ui grid two column stackable" *ngIf="!(contributionType == CONTRIBUTION_TYPE_LOGIN && !personId)">
                     <div class="column">
                       <div class="ui dropdown selection fluid" ngSemantic>
                         <i class="icon dropdown"></i>

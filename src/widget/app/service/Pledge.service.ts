@@ -1,22 +1,11 @@
 import {Injectable} from "@angular/core"
-import {Http, Headers, RequestOptions, URLSearchParams} from "@angular/http"
-import { Observable } from "rxjs";
+import {Http} from "@angular/http"
 import {ConstantsGlobal} from "../Constants-Global"
-import {CookieService} from "./Cookie.service"
 
 @Injectable()
 export class PledgeService {
-  authToken: string;
   
   constructor(private http: Http) {
-    this.refreshAuthToken();
-  }
-
-  /**
-   * Grab auth token from the cookie
-   */
-  refreshAuthToken() {
-    this.authToken = CookieService.getThrinaciaSedraAccount() ? CookieService.getThrinaciaSedraAccount() : CookieService.getAuth();
   }
 
   /**
@@ -34,18 +23,27 @@ export class PledgeService {
 
     pledgeInfo.use_sca = 1;
 
-    let postData = (data) => {
-      return {
-        method: 'POST', 
-        headers: {
-          'Content-type': 'application/json'
-        },
-        body: JSON.stringify(data)
+    let postData = (url, data) => new Promise<any>((resolve, reject) =>{
+      let headers = {
+        'Content-type': 'application/json',
       }
-    }
+      fetch(url, {
+        method: 'POST', 
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(data)
+      }).then(res => {
+        if(!res.ok){
+          reject(failed);
+        }
+        resolve(res.json())
+      }).catch(error => {
+        reject(failed);
+      })
+    });
 
-    return new Promise((resolve, reject) => {
-      fetch(ConstantsGlobal.getApiUrlCampaign()+campaign_id+'/pledge', postData(pledgeInfo)).then(res => res.json()).then(
+   return new Promise((resolve, reject) => {
+      postData(ConstantsGlobal.getApiUrlCampaign()+campaign_id+'/pledge', pledgeInfo).then(
         success => {
         var successful_pledge: any = success;
         // pledge and tip authentication
@@ -54,21 +52,15 @@ export class PledgeService {
             if(pi.error){
               reject(failed);
             }
-            fetch(ConstantsGlobal.getApiUrl()+'account/stripe/payment-intent-direct/confirm/'+success.charge_id,
-            postData({stripe_transaction_id: success.stripe_transaction_id, entry_id: campaign_id})).then(res => res.json()).then((res) => {
-              if(res.status != '200'){
-                reject(failed);
-              }
+            postData(ConstantsGlobal.getApiUrl()+'account/stripe/payment-intent-direct/confirm/'+success.charge_id,
+            {stripe_transaction_id: success.stripe_transaction_id, entry_id: campaign_id}).then((res) => {
               stripe_tip.handleCardAction(success.payment_intent_client_secret_tip).then(function(pi_tip){
                 if(pi_tip.error){
                   successful_pledge.amount_tip = 0;
                   resolve(successful_pledge);
                 } else {
-                  fetch(ConstantsGlobal.getApiUrl()+'account/stripe/payment-intent-direct/confirm/'+success.charge_id_tip, 
-                  postData({stripe_transaction_id: success.stripe_transaction_id, entry_id: campaign_id, tip_transaction: 1})).then(res => res.json()).then((res) => {
-                    if(res.status != '200'){
-                      reject(failed);
-                    }
+                  postData(ConstantsGlobal.getApiUrl()+'account/stripe/payment-intent-direct/confirm/'+success.charge_id_tip, 
+                  {stripe_transaction_id: success.stripe_transaction_id, entry_id: campaign_id, tip_transaction: 1}).then((res) => {
                     resolve(successful_pledge);
                   }).catch(error => {
                     reject(failed);
@@ -92,12 +84,8 @@ export class PledgeService {
             } else {
               let url = ConstantsGlobal.getApiUrl()+'account/stripe/payment-intent-direct/confirm/'+success.charge_id;
               let data = { stripe_transaction_id: success.stripe_transaction_id, entry_id: campaign_id };
-              console.log(data);
-              fetch(url, postData(data)).then(res => res.json()).then(
+              postData(url, data).then(
                 res => {
-                  if(res.status != '200'){
-                    reject(failed);
-                  }
                   resolve(successful_pledge);
                 }).catch( error => {
                   reject(failed)
@@ -114,11 +102,8 @@ export class PledgeService {
               successful_pledge.amount_tip = 0;
               resolve(successful_pledge);
             } else {
-              fetch(ConstantsGlobal.getApiUrl()+'account/stripe/payment-intent-direct/confirm/'+success.charge_id_tip,
-              postData({stripe_transaction_id: success.stripe_transaction_id, entry_id: campaign_id, tip_transaction: 1})).then(res => res.json()).then((res) => {
-                if(res.status != '200'){
-                  reject(failed);
-                }
+              postData(ConstantsGlobal.getApiUrl()+'account/stripe/payment-intent-direct/confirm/'+success.charge_id_tip,
+              {stripe_transaction_id: success.stripe_transaction_id, entry_id: campaign_id, tip_transaction: 1}).then((res) => {
                 resolve(successful_pledge);
               }).catch(error => {
                 reject(failed);

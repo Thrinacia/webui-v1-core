@@ -2,7 +2,6 @@
 import { Injectable, Inject } from "@angular/core";
 import { Http, Headers, RequestOptions, URLSearchParams } from "@angular/http";
 import { ConstantsGlobal } from "../Constants-Global";
-import { CookieService } from "./Cookie.service";
 import { StripeService } from "./Stripe.service";
 
 @Injectable()
@@ -11,44 +10,31 @@ export class CampaignService {
   ANONYMOUS_CONTIBUTION_PARTIAL = "partial_anonymous";
   res: any;
   campaignId: number;
-  authToken: string;
   mStripeService: StripeService;
 
   constructor(private http: Http, @Inject(StripeService) stripeService: StripeService) {
-    this.refreshAuthToken();
     this.mStripeService = stripeService;
   }
 
-  /**
-   * Grab auth token from the cookie
-   */
-  refreshAuthToken() {
-    this.authToken = CookieService.getAuth();
-  }
-
-  getAuthOptions(authToken?: string, search?: URLSearchParams) {
-    if (authToken) {
-      let headers = new Headers();
-      headers.append("X-Auth-Token", authToken);
-      let options = new RequestOptions({
-        headers: headers,
-        search: search
-      });
-      return options;
-    } else {
-      return null;
-    }
+  getAuthOptions(search?: URLSearchParams) {
+    let headers = new Headers();
+    let options = new RequestOptions({
+      headers: headers,
+      search: search,
+      withCredentials: true,
+    });
+    return options;
   }
 
   /**
    * Get campaign data through the API
    * @return {Observable} An observable that function can subscribe to
    */
-  getCampaignData(campaignId: number, authToken?: string) {
+  getCampaignData(campaignId: number) {
     this.campaignId = campaignId;
     let campaignUrl = ConstantsGlobal.getApiUrlCampaign() + campaignId;
 
-    return this.http.get(campaignUrl, this.getAuthOptions(authToken))
+    return this.http.get(campaignUrl, this.getAuthOptions())
       .map(res => res.json());
   }
 
@@ -56,10 +42,10 @@ export class CampaignService {
    * Get campaign data through the API
    * @return {Observable} An observable that function can subscribe to
    */
-  getCouponData(campaignId: number, couponCode: string, pledgeLevelId: number, authToken?: string) {
+  getCouponData(campaignId: number, couponCode: string, pledgeLevelId: number) {
     let campaignUrl = ConstantsGlobal.getApiUrlCampaign() + campaignId +"/coupon?code="+couponCode+"&pledge_level_id="+pledgeLevelId;
 
-    return this.http.get(campaignUrl, this.getAuthOptions(authToken))
+    return this.http.get(campaignUrl, this.getAuthOptions())
       .map(res => res.json());
   }
 
@@ -69,7 +55,7 @@ export class CampaignService {
     if (campaignFilters) {
       urlParam.append("filters", JSON.stringify(campaignFilters));
     }
-    return this.http.get(campaignUrl, this.getAuthOptions(this.authToken, urlParam))
+    return this.http.get(campaignUrl, this.getAuthOptions(urlParam))
       .map(res => res.json());
   }
 
@@ -80,7 +66,7 @@ export class CampaignService {
    */
   getCampaignStream(campaignId: number) {
     let campaignStreamUrl = ConstantsGlobal.getApiUrlCampaign() + campaignId + "/stream";
-    return this.http.get(campaignStreamUrl, this.getAuthOptions(this.authToken))
+    return this.http.get(campaignStreamUrl, this.getAuthOptions())
       .map(res => res.json());
   }
 
@@ -91,7 +77,7 @@ export class CampaignService {
    */
   getCampaignBackers(campaignId: number) {
     let campaignBackerUrl = ConstantsGlobal.getApiUrlCampaign() + campaignId + "/backer/";
-    return this.http.get(campaignBackerUrl, this.getAuthOptions(this.authToken))
+    return this.http.get(campaignBackerUrl, this.getAuthOptions())
       .map(res => res.json());
   }
 
@@ -104,7 +90,7 @@ export class CampaignService {
   pledge(campaignId: number, pledgeParam: Object) {
     let API_URL_CAMPAIGN_PLEDGE = ConstantsGlobal.getApiUrlCampaign() + campaignId + "/pledge/";
 
-    return this.http.post(API_URL_CAMPAIGN_PLEDGE, JSON.stringify(pledgeParam), pledgeParam.hasOwnProperty("inline_token") ? null : this.getAuthOptions(this.authToken))
+    return this.http.post(API_URL_CAMPAIGN_PLEDGE, JSON.stringify(pledgeParam), pledgeParam.hasOwnProperty("inline_token") ? null : this.getAuthOptions())
       .map(res => res.json());
   }
 
@@ -141,7 +127,7 @@ export class CampaignService {
 
   getCampaignPledgeHistory(campaignId: number) {
     let campaignPledgeHistoryUrl = ConstantsGlobal.getApiUrlCampaign() + campaignId + "/pledge/";
-    return this.http.get(campaignPledgeHistoryUrl, this.getAuthOptions(this.authToken))
+    return this.http.get(campaignPledgeHistoryUrl, this.getAuthOptions())
       .map(res => res.json());
   }
 

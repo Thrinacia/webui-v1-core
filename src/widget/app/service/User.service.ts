@@ -1,23 +1,21 @@
 import { Http, Headers, RequestOptions } from "@angular/http";
 import { Injectable } from "@angular/core";
 import { ConstantsGlobal } from "../Constants-Global";
-import { CookieService } from "./Cookie.service";
 
 @Injectable()
 export class UserService {
-  static authToken: string;
   userData: Object;
 
   constructor(private http: Http) {
     this.http = http;
-    UserService.getAuthFromCookie();
-  }
-
-  /**
-   * Get auth token from cookie service
-   */
-  static getAuthFromCookie() {
-    UserService.authToken = CookieService.getThrinaciaSedraAccount() ? CookieService.getThrinaciaSedraAccount() : CookieService.getAuth();
+    this.getAuthenticatedUser().subscribe(
+      res => {
+        this.userData = res;
+      },
+      error => {
+       
+      }
+    )
   }
 
   /**
@@ -32,31 +30,20 @@ export class UserService {
       "password": password
     }
     let headers = new Headers({ 'Content-Type': 'application/json' });
-    let options = new RequestOptions({ headers: headers });
+    let options = new RequestOptions({ headers: headers, withCredentials: true });
     return this.http.post(ConstantsGlobal.getApiUrlAuth(), JSON.stringify(body), options)
       .map(res => res.json());
   }
 
-  /**
-   * Get user data from login()
-   * @param  {Object} data JSON data from login()
-   * @return {Observable}
-   */
-  getUserData(data: Object) {
-    this.userData = data;
-    CookieService.setAuth(this.userData["auth_token"]);
-    CookieService.setFirstName(this.userData["first_name"]);
-    CookieService.setPersonID(this.userData["person_id"]);
-    UserService.getAuthFromCookie();
-  }
-
   getAuthenticatedUser() {
-    UserService.getAuthFromCookie();
     let headers = new Headers({ 'Content-Type': 'application/json' });
-    headers.append("X-Auth-Token", UserService.authToken);
-    let options = new RequestOptions({ headers: headers });
+    let options = new RequestOptions({ headers: headers, withCredentials: true });
     return this.http.get(ConstantsGlobal.getApiUrlAuth(), options)
       .map(res => res.json());
+  }
+
+  setUser(data){
+    this.userData = data;
   }
 
   /**
@@ -66,7 +53,7 @@ export class UserService {
    */
   register(registerParam: Object) {
     let headers = new Headers({ 'Content-Type': 'application/json' });
-    let options = new RequestOptions({ headers: headers })
+    let options = new RequestOptions({ headers: headers, withCredentials: true })
     return this.http.post(ConstantsGlobal.getApiUrlRegister(), JSON.stringify(registerParam), options)
       .map(res => res.json());
   }
@@ -83,12 +70,10 @@ export class UserService {
         param[prop] = addressObj[prop];
       }
     }
-    UserService.getAuthFromCookie();
 
     let headers = new Headers();
-    headers.append("X-Auth-Token", UserService.authToken);
     let options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
 
     return this.http.post(ConstantsGlobal.getApiUrlAddress(), JSON.stringify(param), options)
@@ -100,11 +85,10 @@ export class UserService {
    * @return {Observable} Observable
    */
   getAddress() {
-    UserService.getAuthFromCookie();
     let headers = new Headers();
-    headers.append("X-Auth-Token", UserService.authToken);
     let options = new RequestOptions({
-      headers: headers
+      headers: headers,
+      withCredentials: true
     });
 
     return this.http.get(ConstantsGlobal.getApiUrlAddress(), options)
@@ -123,11 +107,9 @@ export class UserService {
         param[prop] = profileObj[prop];
       }
     }
-    UserService.getAuthFromCookie();
     let headers = new Headers();
-    headers.append("X-Auth-Token", UserService.authToken);
     let options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
 
     return this.http.put(ConstantsGlobal.getApiUrlAccount(), JSON.stringify(param), options)
@@ -139,10 +121,8 @@ export class UserService {
    * @return {[type]} [description]
    */
   logout() {
-    UserService.getAuthFromCookie();
     let headers = new Headers();
-    headers.append("X-Auth-Token", UserService.authToken);
-    let options = new RequestOptions({ headers: headers });
+    let options = new RequestOptions({ headers: headers, withCredentials: true });
     return this.http.post(ConstantsGlobal.getApiUrlLogout(), null, options)
       .map(res => {
         res.json();
@@ -161,11 +141,9 @@ export class UserService {
    * @returns
    */
   getPhone() {
-    UserService.getAuthFromCookie();
     let headers = new Headers();
-    headers.append("X-Auth-Token", UserService.authToken);
     let options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
 
     return this.http.get(ConstantsGlobal.getApiUrlPhoneNumber(), options)
@@ -185,14 +163,10 @@ export class UserService {
         param[prop] = phoneObj[prop];
       }
     }
-    UserService.getAuthFromCookie();
 
     let headers = new Headers();
-    if (!phoneObj.hasOwnProperty("inline_token")) {
-      headers.append("X-Auth-Token", UserService.authToken);
-    }
     let options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
 
     return this.http.post(ConstantsGlobal.getApiUrlPhoneNumber(), JSON.stringify(param), options)
@@ -208,7 +182,7 @@ export class UserService {
     let headers = new Headers();
 
     let options = new RequestOptions({
-      headers: headers
+      headers: headers, withCredentials: true
     });
     // { person_id: $scope.registering_user.id, inline_token: $scope.registering_user.inline_token}
     return this.http.put(ConstantsGlobal.getApiUrlInlineDisableUser(), JSON.stringify(param), options)
